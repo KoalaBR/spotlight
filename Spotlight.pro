@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets network
 
 TARGET = Spotlight
 TEMPLATE = app
@@ -24,8 +24,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    filedownloader.cpp \
+    imageitem.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    filedownloader.h \
+    imageitem.h
 
 FORMS    += mainwindow.ui
+# Only for Visual Studio 2016
+windows {
+    *-g++* {
+            # MinGW
+           }
+    *-msvc* {
+        # MSVC
+        INCLUDEPATH += "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
+        LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.10240.0/ucrt/x64"    }
+}

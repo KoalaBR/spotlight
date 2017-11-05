@@ -1,11 +1,30 @@
 #ifndef FILEDOWNLOADER_H
 #define FILEDOWNLOADER_H
+#include <QObject>
+#include <QNetworkReply>
 
+#include "imageitem.h"
 
-class FileDownloader
+class DownloadManager: public QObject
 {
-public:
-    FileDownloader();
-};
+    Q_OBJECT
+    QNetworkAccessManager       m_manager;
+    QList<QNetworkReply *>      m_currentDownloads;
+    QMap<QString, ImageItem>    m_pendingImages;
 
+public:
+    DownloadManager();
+    void    downloadImage(const ImageItem item);
+    void    downloadJSON(const QUrl &url);
+
+    QString saveFileName(const QUrl &url);
+    bool saveToDisk(const QString &filename, QIODevice *data);
+
+public slots:
+    void    downloadFinished(QNetworkReply *reply);
+    void    sslErrors(const QList<QSslError> &errors);
+signals:
+    void    imageDownloaded(ImageItem item);
+    void    jsonDownloaded(QString content);
+};
 #endif // FILEDOWNLOADER_H
