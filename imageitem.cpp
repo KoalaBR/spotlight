@@ -72,9 +72,19 @@ QString ImageItem::filename(void)
     QString filename = "portrait_";
     if (!isPortrait())
         filename = "landscape_";
-    QString dummy = QString(QCryptographicHash::hash(m_url.toUtf8(),QCryptographicHash::Md5).toHex());
-    dummy = dummy.left(20);
-    filename += dummy + ".png";
+    if (m_title != "")
+    {
+        QString name = m_title;
+        name = name.replace(',','_');
+        name = name.replace(" ", "");
+        filename += name + ".jpg";
+    }
+    else
+    {
+        QString dummy = QString(QCryptographicHash::hash(m_url.toUtf8(),QCryptographicHash::Md5).toHex());
+        dummy = dummy.left(20);
+        filename += dummy + ".jpg";
+    }
     return filename;
 }
 

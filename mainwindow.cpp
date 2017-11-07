@@ -3,12 +3,15 @@
 #include <QJsonArray>
 #include <QDir>
 #include <QMap>
+#include <QPainter>
+#include <QSettings>
+
+#include <time.h>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imageitem.h"
 
-QMap<QString, ImageItem>    imageMap;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,14 +22,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
     connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
     connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
+    connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
+    m_changeImgTimeout.start(C_MW_TimeOut);
+    srand(static_cast<unsigned int>(time(NULL)));
+    loadSettings();
 }
 
 MainWindow::~MainWindow()
 {
+    saveSettings();
     delete ui;
 }
 
-void MainWindow::clickedSearch()
+void MainWindow::clickedSearch(void)
 {
     // Start url erstellen
     QUrl url = QUrl(createFirstRequest());
@@ -34,6 +42,40 @@ void MainWindow::clickedSearch()
     printLine("Lade Startbild\n");
     m_downloader.downloadJSON(url);
 }
+
+void MainWindow::slotChangeBackgroundTimeout()
+{
+    qDebug() << "Change background";
+    // Suchen wir nach Portrait oder Landscape?
+    QString path = "download";
+    path += QDir::separator() + QString("spotlight") + QDir::separator();
+    if (ui->cmbOrientation->currentIndex() == 0)
+    {
+        // Portrait
+        path += "portrait";
+    }
+    else
+    {
+        // Landscape
+        path += "landscape";
+    }
+    QDir dir(path);
+    qDebug() << path;
+    QStringList list = dir.entryList(QDir::Files);
+    qDebug() << "Size = " << list.size();
+    if (list.size() == 0)
+        return;
+    int index = random() % list.size();
+    qDebug() << "/" <<list[index] << "/";
+    if (m_img1.load(path + QDir::separator() + list[index]))
+    {
+        qDebug() << m_img1.width() << m_img1.height();
+        this->resize(m_img1.width(), m_img1.height());
+        this->centralWidget()->repaint();
+    }
+
+}
+
 
 /**
  * @brief MainWindow::slotDownloadComplete
@@ -67,6 +109,24 @@ void MainWindow::printLine(QString line)
 {
     ui->teShowActions->moveCursor(QTextCursor::Start);
     ui->teShowActions->insertPlainText(line+"\r");
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
+    settings.setValue("orientation", ui->cmbOrientation->currentIndex());
+    settings.setValue("title",  ui->cmbTitle->currentIndex());
+    settings.setValue("geometry", this->geometry());
+
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
+    ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
+    ui->cmbOrientation->setCurrentIndex(settings.value("title", 0).toInt());
+    QRect rect = settings.value("geometry").toRect();
+    this->setGeometry(rect);
 }
 
 QList<ImageItem> MainWindow::getItemList(QByteArray data)
@@ -169,13 +229,12 @@ void MainWindow::createCacheDirs(void)
 {
     QString path = QString("download") + QDir::separator() + "spotlight";
     QDir md = QDir();
-    md.mkpath(path);
+    md.mkpath(path + QDir::separator() + "portrait");
+    md.mkpath(path + QDir::separator() + "landscape");
     path = QString("download") + QDir::separator() + "bing";
-    md.mkpath(path);
-
+    md.mkpath(path + QDir::separator() + "landscape");
+    md.mkpath(path + QDir::separator() + "portrait");
 }
-
-int count = 0;  /// Nur zum Test!!!!!!!!
 
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
@@ -184,9 +243,21 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
     if (item.source() == Source::SRC_SPOTLIGHT)
         filename += QDir::separator() + QString("spotlight");
     else filename += QDir::separator() + QString("bing");
-
-//    filename += QDir::separator() + item.filename();
-    filename = QString("C:\\tmp\\test%1.jpg").arg(count++);
+    filename += QDir::separator();
+    if (item.isPortrait())
+        filename += "portrait";
+    else filename += "landscape";
+    filename += QDir::separator() + item.filename();
     qDebug() << filename;
     item.image().save(filename);
+}
+
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    if (!m_img1.isNull())
+    {
+        QPainter paint(this);
+        paint.drawImage(QPoint(0,0), m_img1);
+    }
+    QMainWindow::paintEvent(event);
 }
