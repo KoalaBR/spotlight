@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui widgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets network
 
@@ -26,11 +26,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     filedownloader.cpp \
-    imageitem.cpp
+    imageitem.cpp \
+    database.cpp \
+    addimagethread.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
-    imageitem.h
+    imageitem.h \
+    database.h \
+    addimagethread.h
 
 FORMS    += mainwindow.ui
 # Only for Visual Studio 2016

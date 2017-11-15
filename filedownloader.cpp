@@ -116,4 +116,6 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
         }
     }
     reply->deleteLater();
+    if (m_currentDownloads.size() == 0)
+        emit downloadsFinished();
 }

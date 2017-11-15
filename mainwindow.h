@@ -7,6 +7,8 @@
 
 #include "filedownloader.h"
 #include "imageitem.h"
+#include "database.h"
+#include "addimagethread.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,26 +27,34 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 public slots:
+    void        clickedHideGUI(void);
     void        clickedSearch(void);
+    void        clickedShowGUI(void);
     void        slotChangeBackgroundTimeout(void);
     void        slotDownloadComplete(QString    content);
     void        slotImageDownloadComplete(ImageItem item);
+    void        slotAddImage(ImageItem item, int row, int col);
+    void        slotDownloadsFinished(void);
 protected:
     void        paintEvent(QPaintEvent *event);
+    void        closeEvent(QCloseEvent *event);
+    void        resizeEvent(QResizeEvent* event);
 private:
-    QString     createFirstRequest();
+    QString     createFirstRequest(void);
     void        printLine(QString line);        ///< Fügt eine Zeile am Anfang ein.
     void        saveSettings(void);
     void        loadSettings(void);
     QList<ImageItem> getItemList(QByteArray data);
     QList<ImageItem> decodeJsonList(QString value);
     QList<ImageItem> getImageItem(QJsonObject image);
-    void             createCacheDirs();
+    void             createCacheDirs(void);
 
     Ui::MainWindow      *ui;
     DownloadManager      m_downloader;
     QTimer               m_changeImgTimeout;            ///< Timer, which changes background image if possible
     QImage               m_img1;
+    Database             m_database;
+    AddImageThread      *m_addThread;
 };
 
 #endif // MAINWINDOW_H

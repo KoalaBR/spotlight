@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QPainter>
 #include <QSettings>
+#include <QGraphicsDropShadowEffect>
 
 #include <time.h>
 
@@ -23,15 +24,42 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
     connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
     connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
+    connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
+    connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
     m_changeImgTimeout.start(C_MW_TimeOut);
     srand(static_cast<unsigned int>(time(NULL)));
+    QGraphicsDropShadowEffect *labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
+    labelTextShadowEffect->setColor(QColor("#BBBBBB"));
+    labelTextShadowEffect->setBlurRadius(0.4);
+    labelTextShadowEffect->setOffset(1, 1);
+    ui->label->setGraphicsEffect(labelTextShadowEffect );
+    labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
+    labelTextShadowEffect->setColor(QColor("#BBBBBB"));
+    labelTextShadowEffect->setBlurRadius(0.4);
+    labelTextShadowEffect->setOffset(1, 1);
+    ui->label_3->setGraphicsEffect(labelTextShadowEffect );
     loadSettings();
+    slotChangeBackgroundTimeout();
+    if (!m_database.openDatabase())
+        printLine(tr("Error: Could not open database"));
+    m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
 }
 
 MainWindow::~MainWindow()
 {
-    saveSettings();
     delete ui;
+}
+
+void MainWindow::clickedHideGUI(void)
+{
+    ui->stackedWidget->setCurrentIndex(1);
+    ui->pgbProgress->hide();
+    ui->lblText->hide();
+}
+
+void MainWindow::clickedShowGUI(void)
+{
+    ui->stackedWidget->setCurrentIndex(0);
 }
 
 void MainWindow::clickedSearch(void)
@@ -39,7 +67,7 @@ void MainWindow::clickedSearch(void)
     // Start url erstellen
     QUrl url = QUrl(createFirstRequest());
     ui->teShowActions->clear();
-    printLine("Lade Startbild\n");
+    m_addThread->clearBackground();
     m_downloader.downloadJSON(url);
 }
 
@@ -60,17 +88,14 @@ void MainWindow::slotChangeBackgroundTimeout()
         path += "landscape";
     }
     QDir dir(path);
-    qDebug() << path;
     QStringList list = dir.entryList(QDir::Files);
     qDebug() << "Size = " << list.size();
     if (list.size() == 0)
         return;
     int index = random() % list.size();
-    qDebug() << "/" <<list[index] << "/";
     if (m_img1.load(path + QDir::separator() + list[index]))
     {
-        qDebug() << m_img1.width() << m_img1.height();
-        this->resize(m_img1.width(), m_img1.height());
+        this->setFixedSize(m_img1.width(), m_img1.height());
         this->centralWidget()->repaint();
     }
 
@@ -94,13 +119,15 @@ void MainWindow::slotDownloadComplete(QString content)
         if (item.isPortrait() && (orientation != 1))    // 0 = Portrait, 2 = both
         {
             // download data
-            m_downloader.downloadImage(item);
+            if (m_database.canDownloadImage(item))
+                m_downloader.downloadImage(item);
         }
         else
         if ((!item.isPortrait()) && (orientation != 0)) // 1 = landscape, 2 = both
         {
             // download
-            m_downloader.downloadImage(item);
+            if (m_database.canDownloadImage(item))
+                m_downloader.downloadImage(item);
         }
     }
 }
@@ -111,7 +138,7 @@ void MainWindow::printLine(QString line)
     ui->teShowActions->insertPlainText(line+"\r");
 }
 
-void MainWindow::saveSettings()
+void MainWindow::saveSettings(void)
 {
     QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
     settings.setValue("orientation", ui->cmbOrientation->currentIndex());
@@ -120,11 +147,11 @@ void MainWindow::saveSettings()
 
 }
 
-void MainWindow::loadSettings()
+void MainWindow::loadSettings(void)
 {
     QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
     ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
-    ui->cmbOrientation->setCurrentIndex(settings.value("title", 0).toInt());
+    ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
     QRect rect = settings.value("geometry").toRect();
     this->setGeometry(rect);
 }
@@ -155,6 +182,7 @@ QList<ImageItem> MainWindow::getItemList(QByteArray data)
 
 QList<ImageItem> MainWindow::decodeJsonList(QString value)
 {
+    printLine("Durchsuche Bilderliste...\n");
     QJsonParseError jsErr;
     QJsonDocument doc(QJsonDocument::fromJson(value.toUtf8(), &jsErr));
     QJsonObject  item = doc.object();
@@ -215,6 +243,7 @@ QList<ImageItem> MainWindow::getImageItem(QJsonObject image)
 QString MainWindow::createFirstRequest(void)
 {
     // lo = 86774
+    printLine("Spotlight: Frage nach Bilderliste...\n");
     QString url = "https://arc.msn.com/v3/Delivery/Cache?pid=209567&fmt=json&";
     url += "rafb=0&ua=WindowsShellClient%2F0&disphorzres=2560&dispvertres=1440";
     url += "&lo=80217&pl=de-DE&lc=de-DE&ctry=de&time=";
@@ -250,6 +279,25 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
     filename += QDir::separator() + item.filename();
     qDebug() << filename;
     item.image().save(filename);
+    m_database.addImage(item);
+    printLine("Runter geladen:" + item.title());
+    m_addThread->addImage(item, true);
+}
+
+void MainWindow::slotAddImage(ImageItem item, int row, int col)
+{
+
+    QTableWidgetItem *witem = new QTableWidgetItem();
+    witem->setData(Qt::DecorationRole, item.image());
+    witem->setData(Qt::ToolTipRole, item.title());
+    if (row >= ui->tbwOverview->rowCount())
+        ui->tbwOverview->setRowCount(row);
+
+
+}
+
+void MainWindow::slotDownloadsFinished(void)
+{
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -260,4 +308,18 @@ void MainWindow::paintEvent(QPaintEvent *event)
         paint.drawImage(QPoint(0,0), m_img1);
     }
     QMainWindow::paintEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    saveSettings();
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    qDebug() << "Resizebreite: " << ui->tbwOverview->width();
+    QMainWindow::resizeEvent(event);
+    m_addThread->initOverview(Filter::FI_ALL);
+
 }

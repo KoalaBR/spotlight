@@ -26,5 +26,6 @@ public slots:
 signals:
     void    imageDownloaded(ImageItem item);
     void    jsonDownloaded(QString content);
+    void    downloadsFinished(void);
 };
 #endif // FILEDOWNLOADER_H

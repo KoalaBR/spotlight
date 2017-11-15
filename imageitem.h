@@ -3,7 +3,7 @@
 #include <QString>
 #include <QImage>
 
-enum class Source {SRC_BING, SRC_SPOTLIGHT};
+enum class Source {SRC_BING, SRC_CHROMECAST, SRC_SPOTLIGHT};
 
 class ImageItem
 {
