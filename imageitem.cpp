@@ -1,5 +1,5 @@
 #include "imageitem.h"
-
+#include <QDebug>
 #include <QCryptographicHash>
 
 ImageItem::ImageItem(QString title,          QString url,
@@ -10,6 +10,7 @@ ImageItem::ImageItem(QString title,          QString url,
     m_src   = src;
     m_description = description;
     m_portrait    = portrait;
+    m_deleted     = 0;
 }
 
 QString ImageItem::title() const
@@ -40,6 +41,18 @@ void ImageItem::setSource(Source src)
 void ImageItem::setImage(QImage img)
 {
     m_img = img;
+}
+
+bool ImageItem::isDeleted()
+{
+    if (m_deleted == 0)
+        return false;
+    else return true;
+}
+
+void ImageItem::setDeleted(int del)
+{
+    m_deleted = del;
 }
 
 int ImageItem::width(void) const
@@ -85,6 +98,8 @@ QString ImageItem::filename(void)
         dummy = dummy.left(20);
         filename += dummy + ".jpg";
     }
+    filename = filename.normalized(QString::NormalizationForm_KD);
+    filename = filename.remove(QRegExp("[^a-zA-Z0-9._\\s]"));
     return filename;
 }
 

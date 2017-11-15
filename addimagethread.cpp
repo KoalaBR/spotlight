@@ -10,11 +10,12 @@ AddImageThread::AddImageThread(Database *db, QTableWidget *over)
 
 void AddImageThread::initOverview(Filter f)
 {
-    qDebug() << "InitOverview";
+    m_col = 0;
+    m_row = 0;
+    m_height = 0;
     m_overview->clear();
-    m_images.clear();
-    int width = m_overview->width();
     int cols  = 4;
+    m_overview->setColumnCount(cols);
     QList<ImageItem> images = m_db->getImages(f);
     if (images.size() == 0)
         return;
@@ -27,30 +28,11 @@ void AddImageThread::initOverview(Filter f)
     else
     if (images.size() % rows != 0)
         rows++;
-    m_overview->setColumnCount(cols);
     m_overview->setRowCount(rows);
-    m_col = 0;
-    m_row = 0;
-    m_height = 0;
     for (int i = 0; i < images.size(); i++)
     {
         ImageItem item = images[i];
         addImage(item);
-#if 0
-        QTableWidgetItem *pic = createTableItem(item);
-        if (item.image().height() > m_height)
-            m_height = item.image().height();
-        m_overview->setItem(m_row, m_col, pic);
-        m_overview->setColumnWidth(m_col, 160);
-        m_col++;
-        if (4 == m_col)
-        {
-            m_overview->setRowHeight(m_row, m_height+8);
-            m_row++;
-            m_height = 0;
-            m_col = 0;
-        }
-#endif
     }
     m_overview->setRowHeight(m_row, m_height+8);
 }
@@ -59,8 +41,12 @@ void AddImageThread::addImage(ImageItem item, bool newPic)
 {
     m_images.append(item);
     QTableWidgetItem *pic = createTableItem(item);
+    pic->setData(Qt::UserRole +1, m_images.size()-1);
+    m_overview->setRowCount(m_row+1);
     if (newPic)
         pic->setBackgroundColor(Qt::green);
+    if (item.isDeleted())
+        pic->setBackgroundColor(Qt::red);
     if (item.image().height() > m_height)
         m_height = item.image().height();
     m_overview->setItem(m_row, m_col, pic);
@@ -72,22 +58,7 @@ void AddImageThread::addImage(ImageItem item, bool newPic)
         m_height = 0;
         m_col = 0;
     }
-    m_overview->setRowCount(m_row+1);
     m_overview->setRowHeight(m_row, m_height+8);
-    //    item.image().save("/tmp/test.jpg");
-//    QTableWidgetItem *pic = createTableItem(item);
-////    pic->setBackgroundColor(Qt::green);
-//    qDebug() << "Col " << m_col  << " Row " << m_row;
-//    m_overview->setItem(m_row, m_col, pic);
-//    m_overview->setColumnWidth(m_col, 160);
-//    m_col++;
-//    if (4 == m_col)
-//    {
-//        m_overview->setRowHeight(m_row, item.image().height()+20);
-//        m_row++;
-//        m_col = 0;
-//    }
-    //    m_overview->setRowCount(m_row);
 }
 
 void AddImageThread::clearBackground()
@@ -101,6 +72,15 @@ void AddImageThread::clearBackground()
                 item->setBackgroundColor(Qt::white);
         }
     }
+}
+
+ImageItem AddImageThread::getItem(int index)
+{
+    if (index < 0)
+        return ImageItem();
+    if (index >= m_images.size())
+        return ImageItem();
+    return m_images[index];
 }
 
 QTableWidgetItem *AddImageThread::createTableItem(ImageItem item)

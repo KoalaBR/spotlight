@@ -35,6 +35,7 @@ public slots:
     void        slotImageDownloadComplete(ImageItem item);
     void        slotAddImage(ImageItem item, int row, int col);
     void        slotDownloadsFinished(void);
+    void        slotCustomMenuRequested(const QPoint pos);
 protected:
     void        paintEvent(QPaintEvent *event);
     void        closeEvent(QCloseEvent *event);
@@ -48,6 +49,7 @@ private:
     QList<ImageItem> decodeJsonList(QString value);
     QList<ImageItem> getImageItem(QJsonObject image);
     void             createCacheDirs(void);
+    QString          createStoredImageFilename(ImageItem &img);
 
     Ui::MainWindow      *ui;
     DownloadManager      m_downloader;

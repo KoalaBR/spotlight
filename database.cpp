@@ -31,7 +31,6 @@ bool Database::openDatabase(void)
                 "url varchar(200), md5 varchar(250), deleted integer, desc varchar(250), "
                 "source integer, thumb blob, title varchar(200), days integer, portrait integer)";
         QSqlQuery query(m_db);
-        qDebug() << sql;
         if (query.exec(sql))
             return true;
         else
@@ -43,6 +42,12 @@ bool Database::openDatabase(void)
     }
 }
 
+/**
+ * @brief Database::canDownloadImage
+ * can this item be downloaded?
+ * @param item
+ * @return
+ */
 bool Database::canDownloadImage(ImageItem item)
 {
     if (item.source() == Source::SRC_BING)
@@ -60,11 +65,12 @@ bool Database::canDownloadImage(ImageItem item)
             return true;
         else
         {
+            // If we have a result, we either don't want it or
+            // already have it downloaded (as it is stored in the db).
+            // So no download necessary
             if (!query.next())
                 return true;
-            if (query.value("deleted").toInt() == 1)
-                return false;
-            return true;
+            else return false;
         }
     }
 }
@@ -116,9 +122,10 @@ QList<ImageItem> Database::getImages(Filter f)
         while (query.next())
         {
              QByteArray byteArray = query.value(6).toByteArray();
-             QImage img = QImage::fromData(byteArray);
+             QImage  img = QImage::fromData(byteArray);
              QString url = query.value(0).toString();
              QString md5 = query.value(1).toString();
+             int     del = query.value(2).toInt();
              Source src  = static_cast<Source>(query.value(3).toInt());
              QString title = query.value(4).toString();
              QString desc  = query.value(7).toString();
@@ -127,6 +134,7 @@ QList<ImageItem> Database::getImages(Filter f)
                  portrait = true;
              ImageItem item(title, url, desc, portrait, src);
              item.setImage(img);
+             item.setDeleted(del);
              list.append(item);
         }
     }

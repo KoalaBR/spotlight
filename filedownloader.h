@@ -18,7 +18,6 @@ public:
     void    downloadJSON(const QUrl &url);
 
     QString saveFileName(const QUrl &url);
-    bool saveToDisk(const QString &filename, QIODevice *data);
 
 public slots:
     void    downloadFinished(QNetworkReply *reply);

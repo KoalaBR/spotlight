@@ -13,9 +13,10 @@ class AddImageThread : public QThread
 public:
     AddImageThread(Database *db, QTableWidget *over);
 
-    void    initOverview(Filter f);
-    void    addImage(ImageItem item, bool newPic = false);
-    void    clearBackground(void);
+    void        initOverview(Filter f);
+    void        addImage(ImageItem item, bool newPic = false);
+    void        clearBackground(void);
+    ImageItem   getItem(int index);
 signals:
     void    signalAddImage(ImageItem item);
 private:

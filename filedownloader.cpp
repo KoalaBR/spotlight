@@ -56,23 +56,6 @@ QString DownloadManager::saveFileName(const QUrl &url)
     return basename;
 }
 
-bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
-{
-    /*
-    QFile file(filename);
-    if (!file.open(QIODevice::WriteOnly)) {
-        fprintf(stderr, "Could not open %s for writing: %s\n",
-                qPrintable(filename),
-                qPrintable(file.errorString()));
-        return false;
-    }
-
-    file.write(data->readAll());
-    file.close();
-*/
-    return true;
-}
-
 void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 {
 #ifndef QT_NO_SSL

@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QSettings>
 #include <QGraphicsDropShadowEffect>
+#include <QProcess>
 
 #include <time.h>
 
@@ -26,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
     connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
+    connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
+    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(slotCustomMenuRequested(const QPoint)));
     m_changeImgTimeout.start(C_MW_TimeOut);
     srand(static_cast<unsigned int>(time(NULL)));
     QGraphicsDropShadowEffect *labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
@@ -73,7 +76,6 @@ void MainWindow::clickedSearch(void)
 
 void MainWindow::slotChangeBackgroundTimeout()
 {
-    qDebug() << "Change background";
     // Suchen wir nach Portrait oder Landscape?
     QString path = "download";
     path += QDir::separator() + QString("spotlight") + QDir::separator();
@@ -89,7 +91,6 @@ void MainWindow::slotChangeBackgroundTimeout()
     }
     QDir dir(path);
     QStringList list = dir.entryList(QDir::Files);
-    qDebug() << "Size = " << list.size();
     if (list.size() == 0)
         return;
     int index = random() % list.size();
@@ -267,7 +268,6 @@ void MainWindow::createCacheDirs(void)
 
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
-    qDebug() << "Download Ende: "<< item.url();
     QString filename = QString("download");
     if (item.source() == Source::SRC_SPOTLIGHT)
         filename += QDir::separator() + QString("spotlight");
@@ -277,7 +277,6 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
         filename += "portrait";
     else filename += "landscape";
     filename += QDir::separator() + item.filename();
-    qDebug() << filename;
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());
@@ -300,6 +299,84 @@ void MainWindow::slotDownloadsFinished(void)
 {
 }
 
+QString MainWindow::createStoredImageFilename(ImageItem &img)
+{
+    QString fname = QDir::currentPath() + "/download/";
+    if (img.source() == Source::SRC_SPOTLIGHT)
+        fname += "spotlight/";
+    else
+    if (img.source() == Source::SRC_BING)
+        fname += "bing/";
+    else fname += "chromecast/";
+    if (img.isPortrait())
+        fname += "portrait/";
+    else fname += "landscape/";
+    fname += img.filename();
+    return fname;
+}
+
+void MainWindow::slotCustomMenuRequested(const QPoint pos)
+{
+    QTableWidgetItem *item = ui->tbwOverview->currentItem();
+    if (item == NULL)
+        return;
+    int index = item->data(Qt::UserRole +1).toInt();
+    ImageItem img = m_addThread->getItem(index);
+    if (img.image().isNull())
+        return;
+    QMenu *menu = new QMenu(this);
+    if (img.isDeleted())
+        menu->addAction(new QAction(tr("reload")));
+    else
+    {
+        menu->addAction(new QAction(tr("Set as Background")));
+        menu->addAction(new QAction(tr("Delete")));
+        menu->addAction(new QAction(tr("Show")));
+    }
+    QAction *action = menu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
+    QString fname = createStoredImageFilename(img);
+    if (action->text() == tr("Set as Background"))
+    {
+#ifdef Q_OS_LINUX        
+        FILE *file = fopen("/tmp/change.sh", "w");
+
+        qDebug() << fname;
+        if (file != NULL)
+        {
+            fprintf(file, "qdbus ");
+            fprintf(file, "org.kde.plasmashell ");
+            fprintf(file, "/PlasmaShell ");
+            fprintf(file, "org.kde.PlasmaShell.evaluateScript ");
+            fprintf(file, "'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++)");
+            fprintf(file, "{d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";");
+            fprintf(file, "d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");");
+            fprintf(file, "d.writeConfig(\"Image\", \"file://%s\")}'", fname.toStdString().c_str() );
+            fclose(file);
+            QFile file("/tmp/change.sh");
+            file.setPermissions(QFileDevice::ExeOwner | QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+            QProcess::execute("/tmp/change.sh");
+        }
+        QString name = QDir::tempPath() + QDir::separator() + "change.sh";
+#endif
+//        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://download/spotlight/landscape/landscape_SlangkopLeuchtturmKommetjie_Südafrika.jpg")}'
+
+    }
+    else
+    if (action->text() == tr("Show"))
+    {
+        m_changeImgTimeout.stop();
+        if (m_img1.load(fname))
+        {
+            this->setFixedSize(m_img1.width(), m_img1.height());
+            this->centralWidget()->repaint();
+            clickedHideGUI();
+        }
+        m_changeImgTimeout.start(C_MW_TimeOut);
+
+    }
+    delete menu;
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     if (!m_img1.isNull())
@@ -318,7 +395,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    qDebug() << "Resizebreite: " << ui->tbwOverview->width();
     QMainWindow::resizeEvent(event);
     m_addThread->initOverview(Filter::FI_ALL);
 
