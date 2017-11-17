@@ -21,14 +21,18 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     createCacheDirs();
+    m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
+    m_addThread->start();
     connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
     connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
     connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
     connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
     connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
-    connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
-    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(slotCustomMenuRequested(const QPoint)));
+    connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
+                this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
+    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
+                this, SLOT(slotCustomMenuRequested(const QPoint)));
     m_changeImgTimeout.start(C_MW_TimeOut);
     srand(static_cast<unsigned int>(time(NULL)));
     QGraphicsDropShadowEffect *labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
@@ -45,12 +49,13 @@ MainWindow::MainWindow(QWidget *parent) :
     slotChangeBackgroundTimeout();
     if (!m_database.openDatabase())
         printLine(tr("Error: Could not open database"));
-    m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    if (m_addThread != NULL)
+        m_addThread->doShutdown();
 }
 
 void MainWindow::clickedHideGUI(void)
@@ -70,7 +75,7 @@ void MainWindow::clickedSearch(void)
     // Start url erstellen
     QUrl url = QUrl(createFirstRequest());
     ui->teShowActions->clear();
-    m_addThread->clearBackground();
+    m_addThread->doClear();
     m_downloader.downloadJSON(url);
 }
 
@@ -264,6 +269,9 @@ void MainWindow::createCacheDirs(void)
     path = QString("download") + QDir::separator() + "bing";
     md.mkpath(path + QDir::separator() + "landscape");
     md.mkpath(path + QDir::separator() + "portrait");
+    path = QString("download") + QDir::separator() + "chromecast";
+    md.mkpath(path + QDir::separator() + "landscape");
+    md.mkpath(path + QDir::separator() + "portrait");
 }
 
 void MainWindow::slotImageDownloadComplete(ImageItem item)
@@ -280,19 +288,16 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());
-    m_addThread->addImage(item, true);
+    m_addThread->doAddImage(item, true);
 }
 
-void MainWindow::slotAddImage(ImageItem item, int row, int col)
+void MainWindow::slotAddImage(QTableWidgetItem *item, int row, int col, int height)
 {
-
-    QTableWidgetItem *witem = new QTableWidgetItem();
-    witem->setData(Qt::DecorationRole, item.image());
-    witem->setData(Qt::ToolTipRole, item.title());
-    if (row >= ui->tbwOverview->rowCount())
-        ui->tbwOverview->setRowCount(row);
-
-
+    if (row+1 >= ui->tbwOverview->rowCount())
+        ui->tbwOverview->setRowCount(row+1);
+    ui->tbwOverview->setItem(row, col, item);
+    ui->tbwOverview->setRowHeight(row, height+8);
+    ui->tbwOverview->setColumnWidth(col, 160);
 }
 
 void MainWindow::slotDownloadsFinished(void)
@@ -396,6 +401,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-    m_addThread->initOverview(Filter::FI_ALL);
+    m_addThread->doInit(Filter::FI_ALL);
 
 }

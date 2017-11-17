@@ -59,16 +59,26 @@ bool Database::canDownloadImage(ImageItem item)
     else
     {
         QSqlQuery query(m_db);
-        QString sql = "Select deleted from picdata where source=%1 and url=%2";
-        sql = sql.arg(static_cast<int>(item.source())).arg(item.url());
-        if (!query.exec(sql))
+        QString sql = "Select count(deleted) from picdata where source=:1 and url=:2";
+        query.prepare(sql);
+        query.bindValue(":1", static_cast<int>(item.source()));
+        query.bindValue(":2", item.url());
+        if (!query.exec())
             return true;
         else
         {
+            bool    ok;
             // If we have a result, we either don't want it or
             // already have it downloaded (as it is stored in the db).
             // So no download necessary
+
             if (!query.next())
+                return true;
+            qDebug() << "Url="<< item.url();
+            int count = query.value(0).toInt(&ok);
+            if (!ok)
+                return true;
+            if (count == 0)
                 return true;
             else return false;
         }

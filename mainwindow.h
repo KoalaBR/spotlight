@@ -33,7 +33,7 @@ public slots:
     void        slotChangeBackgroundTimeout(void);
     void        slotDownloadComplete(QString    content);
     void        slotImageDownloadComplete(ImageItem item);
-    void        slotAddImage(ImageItem item, int row, int col);
+    void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
     void        slotDownloadsFinished(void);
     void        slotCustomMenuRequested(const QPoint pos);
 protected:

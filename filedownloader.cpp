@@ -1,11 +1,12 @@
 #include <QNetworkReply>
 #include <QImage>
 #include <QFileInfo>
+#include <QList>
+#include <QSslError>
 
 #include "filedownloader.h"
 #include <imageitem.h>
 
-// b236a7a2955f4563bd77338a20437e53
 
 DownloadManager::DownloadManager()
 {
