@@ -19,6 +19,7 @@ public:
     void    setSource(Source src);
     void    setImage(QImage img);
     void    setDeleted(int del);
+    void    setPortrait(bool port);
 
     int     width(void) const;
     int     height(void) const;

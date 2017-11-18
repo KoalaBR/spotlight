@@ -28,13 +28,19 @@ SOURCES += main.cpp\
     filedownloader.cpp \
     imageitem.cpp \
     database.cpp \
-    addimagethread.cpp
+    addimagethread.cpp \
+    abstractprovider.cpp \
+    spotlightprovider.cpp \
+    bingprovider.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
     imageitem.h \
     database.h \
-    addimagethread.h
+    addimagethread.h \
+    abstractprovider.h \
+    spotlightprovider.h \
+    bingprovider.h
 
 FORMS    += mainwindow.ui
 # Only for Visual Studio 2016

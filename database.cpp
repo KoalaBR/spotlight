@@ -42,6 +42,15 @@ bool Database::openDatabase(void)
     }
 }
 
+ImageItem Database::getRandomImage()
+{
+    QList<ImageItem> list = getImages(Filter::FI_IMAGES_ONLY);
+    if (list.size() == 0)
+        return ImageItem();
+    int index = random() % list.size();
+    return list[index];
+}
+
 /**
  * @brief Database::canDownloadImage
  * can this item be downloaded?
@@ -50,38 +59,28 @@ bool Database::openDatabase(void)
  */
 bool Database::canDownloadImage(ImageItem item)
 {
-    if (item.source() == Source::SRC_BING)
-    {
-        // Must rely on title or days here, as the url is
-        // always an offset in days from the current day
+    QSqlQuery query(m_db);
+    QString sql = "Select count(deleted) from picdata where source=:1 and url=:2";
+    query.prepare(sql);
+    query.bindValue(":1", static_cast<int>(item.source()));
+    query.bindValue(":2", item.url());
+    if (!query.exec())
         return true;
-    }
     else
     {
-        QSqlQuery query(m_db);
-        QString sql = "Select count(deleted) from picdata where source=:1 and url=:2";
-        query.prepare(sql);
-        query.bindValue(":1", static_cast<int>(item.source()));
-        query.bindValue(":2", item.url());
-        if (!query.exec())
-            return true;
-        else
-        {
-            bool    ok;
-            // If we have a result, we either don't want it or
-            // already have it downloaded (as it is stored in the db).
-            // So no download necessary
+        bool    ok;
+        // If we have a result, we either don't want it or
+        // already have it downloaded (as it is stored in the db).
+        // So no download necessary
 
-            if (!query.next())
-                return true;
-            qDebug() << "Url="<< item.url();
-            int count = query.value(0).toInt(&ok);
-            if (!ok)
-                return true;
-            if (count == 0)
-                return true;
-            else return false;
-        }
+        if (!query.next())
+            return true;
+        int count = query.value(0).toInt(&ok);
+        if (!ok)
+            return true;
+        if (count == 0)
+            return true;
+        else return false;
     }
 }
 

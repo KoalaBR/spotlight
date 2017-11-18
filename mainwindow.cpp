@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QMap>
 #include <QPainter>
+#include <QPainterPath>
 #include <QSettings>
 #include <QGraphicsDropShadowEffect>
 #include <QProcess>
@@ -23,10 +24,12 @@ MainWindow::MainWindow(QWidget *parent) :
     createCacheDirs();
     m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
     m_addThread->start();
+    m_currProv = NULL;
     connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
     connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
     connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
     connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
+    connect(&m_fadeTimer,   SIGNAL(timeout()),                  this, SLOT(slotFadeTimeout()));
     connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
@@ -34,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
                 this, SLOT(slotCustomMenuRequested(const QPoint)));
     m_changeImgTimeout.start(C_MW_TimeOut);
+    m_fadeTimer.setInterval(70);
     srand(static_cast<unsigned int>(time(NULL)));
     QGraphicsDropShadowEffect *labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
     labelTextShadowEffect->setColor(QColor("#BBBBBB"));
@@ -45,15 +49,18 @@ MainWindow::MainWindow(QWidget *parent) :
     labelTextShadowEffect->setBlurRadius(0.4);
     labelTextShadowEffect->setOffset(1, 1);
     ui->label_3->setGraphicsEffect(labelTextShadowEffect );
+    initProviders();
     loadSettings();
-    slotChangeBackgroundTimeout();
     if (!m_database.openDatabase())
         printLine(tr("Error: Could not open database"));
+    slotChangeBackgroundTimeout();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_provSpot;
+    delete m_provBing;
     if (m_addThread != NULL)
         m_addThread->doShutdown();
 }
@@ -79,32 +86,33 @@ void MainWindow::clickedSearch(void)
     m_downloader.downloadJSON(url);
 }
 
-void MainWindow::slotChangeBackgroundTimeout()
+void MainWindow::slotChangeBackgroundTimeout(void)
 {
-    // Suchen wir nach Portrait oder Landscape?
-    QString path = "download";
-    path += QDir::separator() + QString("spotlight") + QDir::separator();
-    if (ui->cmbOrientation->currentIndex() == 0)
-    {
-        // Portrait
-        path += "portrait";
-    }
-    else
-    {
-        // Landscape
-        path += "landscape";
-    }
-    QDir dir(path);
-    QStringList list = dir.entryList(QDir::Files);
-    if (list.size() == 0)
+    m_imgOld = m_imgNew;
+    ImageItem item = m_database.getRandomImage();
+    if (item.image().isNull())
         return;
-    int index = random() % list.size();
-    if (m_img1.load(path + QDir::separator() + list[index]))
+    m_title = "";
+    m_fade  = 0.0;
+    if (m_imgNew.load(item.filename()))
     {
-        this->setFixedSize(m_img1.width(), m_img1.height());
+        m_changeImgTimeout.stop();
+        m_fadeTimer.start();
+        m_title = item.title();
+        this->setFixedSize(m_imgNew.width(), m_imgNew.height());
         this->centralWidget()->repaint();
     }
+}
 
+void MainWindow::slotFadeTimeout()
+{
+    this->centralWidget()->repaint();
+    m_fade += 0.10;
+    if (m_fade > 1.0)
+    {
+        m_fadeTimer.stop();
+        m_changeImgTimeout.start();
+    }
 }
 
 
@@ -164,100 +172,17 @@ void MainWindow::loadSettings(void)
 
 QList<ImageItem> MainWindow::getItemList(QByteArray data)
 {
-    QList<ImageItem> result;
-    QJsonDocument doc(QJsonDocument::fromJson(data));
-    QJsonObject  obj = doc.object();
-    QJsonObject batch= obj["batchrsp"].toObject();
-    QJsonArray items = batch["items"].toArray();
-    if (items.size() == 0)
-    {
-        QJsonObject err = batch["errors"].toObject();
-        printLine("Fehler:" + err["msg"].toString());
-        return result;
-    }
-    for (int i = 0; i < items.size(); i++)
-    {
-        QJsonObject jsItem = items[i].toObject();
-        QString value = jsItem["item"].toString();
-        QList<ImageItem> subItemList = decodeJsonList(value);
-        result.append(subItemList);
-    }
-    return result;
-}
-
-
-QList<ImageItem> MainWindow::decodeJsonList(QString value)
-{
-    printLine("Durchsuche Bilderliste...\n");
-    QJsonParseError jsErr;
-    QJsonDocument doc(QJsonDocument::fromJson(value.toUtf8(), &jsErr));
-    QJsonObject  item = doc.object();
-    QList<ImageItem> result;
-    QJsonObject   jsImage= item.value("ad").toObject();
-    result.append(getImageItem(jsImage));
-    return result;
-}
-
-QList<ImageItem> MainWindow::getImageItem(QJsonObject image)
-{
-    QList<ImageItem> result;
-    // title_text: Überschrift
-    // hs2_title_text: Beschreibung Zeile 1
-    // hs2_cta_text:   Beschreibung Zeile 2
-    // image_fullscreen_001_portrait: Array mit Bildinformationen (Hochformat)
-    // image_fullscreen_001_landscape: Array mit Bildinformationen (Querformat)
-    //    in diesem Array:
-    //    w: Breite, h: Höhe, u =  Url zum Download, sha256: Checksumme
-    //    filesize: Dateigröße in Bytes
-    QJsonObject obj = image["title_text"].toObject();
-    QString title =  obj["tx"].toString();
-    obj = image["hs2_title_text"].toObject();
-    QString text  = obj["tx"].toString();
-    obj = image["hs2_cta_text"].toObject();
-    text += "\n" +  obj["tx"].toString();
-    QJsonObject jsImageP = image["image_fullscreen_001_portrait"].toObject();
-    QJsonObject jsImageL = image["image_fullscreen_001_landscape"].toObject();
-    if (!jsImageL.isEmpty())
-    {
-        printLine("Querformat: "+title);
-        QString val = jsImageL["w"].toString();
-        int  width  = val.toInt();
-        val = jsImageL["h"].toString();
-        int  height = val.toInt();
-        QString url = jsImageL["u"].toString();
-        ImageItem itemL(title, url, text, false);
-        itemL.setWidth(width);
-        itemL.setHeight(height);
-        result.append(itemL);
-    }
-    if (!jsImageP.isEmpty())
-    {
-        printLine("Hochformat: "+title);
-        QString val = jsImageP["w"].toString();
-        int  width  = val.toInt();
-        val = jsImageP["h"].toString();
-        int  height = val.toInt();
-        QString url = jsImageP["u"].toString();
-        ImageItem itemP(title, url, text, true);
-        itemP.setWidth(width);
-        itemP.setHeight(height);
-        result.append(itemP);
-    }
-    return result;
+    return m_currProv->getItemList(data);
+//    return m_provBing->getItemList(data);
+//    return m_provSpot->getItemList(data);
 }
 
 QString MainWindow::createFirstRequest(void)
 {
-    // lo = 86774
-    printLine("Spotlight: Frage nach Bilderliste...\n");
-    QString url = "https://arc.msn.com/v3/Delivery/Cache?pid=209567&fmt=json&";
-    url += "rafb=0&ua=WindowsShellClient%2F0&disphorzres=2560&dispvertres=1440";
-    url += "&lo=80217&pl=de-DE&lc=de-DE&ctry=de&time=";
-    QDateTime time = QDateTime::currentDateTime();
-   // url += time.toString("yyyyMMdd")+"T" + time.toString("hhmmss") + "Z";
-    // url += "2016"+time.toString("MMdd")+"T" + time.toString("hhmmss") + "Z";
-    url += "20161205T022103Z";
-    return url;
+    if (m_provBing->canCreateNextRequest())
+        m_currProv = m_provBing;
+    else m_currProv = m_provSpot;
+    return m_currProv->createFirstRequest();
 }
 
 void MainWindow::createCacheDirs(void)
@@ -276,15 +201,7 @@ void MainWindow::createCacheDirs(void)
 
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
-    QString filename = QString("download");
-    if (item.source() == Source::SRC_SPOTLIGHT)
-        filename += QDir::separator() + QString("spotlight");
-    else filename += QDir::separator() + QString("bing");
-    filename += QDir::separator();
-    if (item.isPortrait())
-        filename += "portrait";
-    else filename += "landscape";
-    filename += QDir::separator() + item.filename();
+    QString filename = item.filename();
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());
@@ -304,19 +221,13 @@ void MainWindow::slotDownloadsFinished(void)
 {
 }
 
+/*
+    Create absolute path to image. This is needed to set the wallpaper
+    in KDE.
+ */
 QString MainWindow::createStoredImageFilename(ImageItem &img)
 {
-    QString fname = QDir::currentPath() + "/download/";
-    if (img.source() == Source::SRC_SPOTLIGHT)
-        fname += "spotlight/";
-    else
-    if (img.source() == Source::SRC_BING)
-        fname += "bing/";
-    else fname += "chromecast/";
-    if (img.isPortrait())
-        fname += "portrait/";
-    else fname += "landscape/";
-    fname += img.filename();
+    QString fname = QDir::currentPath() + QDir::separator() + img.filename();
     return fname;
 }
 
@@ -339,13 +250,14 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
         menu->addAction(new QAction(tr("Show")));
     }
     QAction *action = menu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
+    if (action == NULL)
+        return;
     QString fname = createStoredImageFilename(img);
     if (action->text() == tr("Set as Background"))
     {
 #ifdef Q_OS_LINUX        
         FILE *file = fopen("/tmp/change.sh", "w");
 
-        qDebug() << fname;
         if (file != NULL)
         {
             fprintf(file, "qdbus ");
@@ -370,9 +282,11 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
     if (action->text() == tr("Show"))
     {
         m_changeImgTimeout.stop();
-        if (m_img1.load(fname))
+        m_title = "";
+        if (m_imgNew.load(fname))
         {
-            this->setFixedSize(m_img1.width(), m_img1.height());
+            m_title = img.title();
+            this->setFixedSize(m_imgNew.width(), m_imgNew.height());
             this->centralWidget()->repaint();
             clickedHideGUI();
         }
@@ -384,10 +298,29 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    if (!m_img1.isNull())
+    QPainter paint(this);
+    if (!m_imgOld.isNull())
     {
-        QPainter paint(this);
-        paint.drawImage(QPoint(0,0), m_img1);
+        paint.setOpacity(1.0);
+        paint.drawImage(QPoint(0,0), m_imgOld);
+    }
+    if (!m_imgNew.isNull())
+    {
+        paint.setOpacity(m_fade);
+        paint.drawImage(QPoint(0,0), m_imgNew);
+        if ((ui->cmbTitle->currentIndex() == 1) && (m_title.length() > 0))
+        {
+            QPainterPath path;
+            QFont font(paint.font());
+            font.setPixelSize(30);
+            int width = QFontMetrics(font).width(m_title);
+            width = (this->width() - width) >>1;
+            path.addText(width,40,font, m_title);
+            QPen pen(Qt::black);
+            pen.setWidth(6);
+            paint.strokePath(path, pen);
+            paint.fillPath(path, QBrush(Qt::white));
+        }
     }
     QMainWindow::paintEvent(event);
 }
@@ -403,4 +336,10 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     m_addThread->doInit(Filter::FI_ALL);
 
+}
+
+void MainWindow::initProviders(void)
+{
+    m_provSpot = new SpotlightProvider(ui->teShowActions);
+    m_provBing = new BingProvider(ui->teShowActions);
 }

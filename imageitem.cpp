@@ -1,5 +1,6 @@
 #include "imageitem.h"
 #include <QDebug>
+#include <QDir>
 #include <QCryptographicHash>
 
 ImageItem::ImageItem(QString title,          QString url,
@@ -55,6 +56,11 @@ void ImageItem::setDeleted(int del)
     m_deleted = del;
 }
 
+void ImageItem::setPortrait(bool port)
+{
+    m_portrait = port;
+}
+
 int ImageItem::width(void) const
 {
     return m_width;
@@ -82,25 +88,38 @@ Source ImageItem::source(void)
 
 QString ImageItem::filename(void)
 {
-    QString filename = "portrait_";
+    QString srcDirs[] = { "bing", "chromecast", "spotlight"};
+    int index = static_cast<int>(m_src);
+    QString path = "download";
+    path += QDir::separator() + srcDirs[index] + QDir::separator();
     if (!isPortrait())
-        filename = "landscape_";
-    if (m_title != "")
     {
-        QString name = m_title;
-        name = name.replace(',','_');
-        name = name.replace(" ", "");
-        filename += name + ".jpg";
+        path += QString("landscape") + QDir::separator();
+        path += "landscape_";
     }
     else
     {
-        QString dummy = QString(QCryptographicHash::hash(m_url.toUtf8(),QCryptographicHash::Md5).toHex());
-        dummy = dummy.left(20);
-        filename += dummy + ".jpg";
+        path += QString("portrait") + QDir::separator();
+        path += "portrait_";
     }
-    filename = filename.normalized(QString::NormalizationForm_KD);
-    filename = filename.remove(QRegExp("[^a-zA-Z0-9._\\s]"));
-    return filename;
+    QString fname = "";
+    if (m_title != "")
+    {
+        QString name = m_title;
+        name  = name.replace(',','_');
+        name  = name.replace(" ", "");
+        fname = name + ".jpg";
+        fname = fname.normalized(QString::NormalizationForm_KD);
+        fname = fname.remove(QRegExp("[^a-zA-Z0-9._\\s]"));
+    }
+    else
+    {
+        fname = QString(QCryptographicHash::hash(m_url.toUtf8(),QCryptographicHash::Md5).toHex());
+        fname = fname.left(20);
+        fname+= fname + ".jpg";
+    }
+    path = path + fname;
+    return path;
 }
 
 QImage ImageItem::image()

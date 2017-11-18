@@ -19,8 +19,7 @@ public:
     void                deleteImage(ImageItem item);
     bool                canDownloadImage(ImageItem item);
     bool                openDatabase(void);
-signals:
-    void    signalAddImage(ImageItem item);
+    ImageItem           getRandomImage();
 private:
 
     QSqlDatabase    m_db;
