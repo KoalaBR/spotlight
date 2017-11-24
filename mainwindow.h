@@ -11,6 +11,7 @@
 #include "addimagethread.h"
 #include "spotlightprovider.h"
 #include "bingprovider.h"
+#include "chromecastprovider.h"
 
 namespace Ui {
 class MainWindow;
@@ -44,6 +45,7 @@ protected:
     void        closeEvent(QCloseEvent *event);
     void        resizeEvent(QResizeEvent* event);
 private:
+    void        addTags(QMenu *tags, int id);           ///< Add all tags to the sub menu
     void        initProviders(void);
     QString     createFirstRequest(void);
     void        printLine(QString line);        ///< Fügt eine Zeile am Anfang ein.
@@ -66,6 +68,7 @@ private:
     AbstractProvider    *m_currProv;
     SpotlightProvider   *m_provSpot;
     BingProvider        *m_provBing;
+    ChromecastProvider  *m_provCast;
 };
 
 #endif // MAINWINDOW_H

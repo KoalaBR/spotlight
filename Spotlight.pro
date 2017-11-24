@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     addimagethread.cpp \
     abstractprovider.cpp \
     spotlightprovider.cpp \
-    bingprovider.cpp
+    bingprovider.cpp \
+    chromecastprovider.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -40,7 +41,8 @@ HEADERS  += mainwindow.h \
     addimagethread.h \
     abstractprovider.h \
     spotlightprovider.h \
-    bingprovider.h
+    bingprovider.h \
+    chromecastprovider.h
 
 FORMS    += mainwindow.ui
 # Only for Visual Studio 2016

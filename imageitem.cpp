@@ -12,6 +12,7 @@ ImageItem::ImageItem(QString title,          QString url,
     m_description = description;
     m_portrait    = portrait;
     m_deleted     = 0;
+    m_id          = 0;
 }
 
 QString ImageItem::title() const
@@ -59,6 +60,16 @@ void ImageItem::setDeleted(int del)
 void ImageItem::setPortrait(bool port)
 {
     m_portrait = port;
+}
+
+void ImageItem::setId(const int id)
+{
+    m_id = id;
+}
+
+int ImageItem::id() const
+{
+    return m_id;
 }
 
 int ImageItem::width(void) const

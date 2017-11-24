@@ -54,6 +54,10 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!m_database.openDatabase())
         printLine(tr("Error: Could not open database"));
     slotChangeBackgroundTimeout();
+    QList<Tag> list = m_database.getTags();
+    for (int i = 0; i < list.size(); i++)
+        qDebug() << list[i].id << list[i].tag;
+
 }
 
 MainWindow::~MainWindow()
@@ -61,6 +65,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_provSpot;
     delete m_provBing;
+    delete m_provCast;
     if (m_addThread != NULL)
         m_addThread->doShutdown();
 }
@@ -79,7 +84,9 @@ void MainWindow::clickedShowGUI(void)
 
 void MainWindow::clickedSearch(void)
 {
-    // Start url erstellen
+    // make sure that chromecast respects what we are searching
+    // 0 = Portrait, 1 = landscape, 2 = both
+    m_provCast->setFormat(static_cast<Format>(ui->cmbOrientation->currentIndex()));
     QUrl url = QUrl(createFirstRequest());
     ui->teShowActions->clear();
     m_addThread->doClear();
@@ -126,6 +133,7 @@ void MainWindow::slotDownloadComplete(QString content)
 {
     printLine("Daten geladen - Ermittle URLs");
     QList<ImageItem> itemList = getItemList(content.toUtf8());
+    qDebug() << "Anzahl:" << itemList.size();
     for (int i = 0; i < itemList.size(); i++)
     {
         int orientation = ui->cmbOrientation->currentIndex();
@@ -134,16 +142,24 @@ void MainWindow::slotDownloadComplete(QString content)
         {
             // download data
             if (m_database.canDownloadImage(item))
+            {
                 m_downloader.downloadImage(item);
+                printLine(tr("Downloading portrait image"));
+            }
         }
         else
         if ((!item.isPortrait()) && (orientation != 0)) // 1 = landscape, 2 = both
         {
             // download
+
             if (m_database.canDownloadImage(item))
+            {
+                printLine("Download landscape image");
                 m_downloader.downloadImage(item);
+            }
         }
     }
+    printLine(tr("Done"));
 }
 
 void MainWindow::printLine(QString line)
@@ -173,14 +189,16 @@ void MainWindow::loadSettings(void)
 QList<ImageItem> MainWindow::getItemList(QByteArray data)
 {
     return m_currProv->getItemList(data);
-//    return m_provBing->getItemList(data);
-//    return m_provSpot->getItemList(data);
 }
 
 QString MainWindow::createFirstRequest(void)
 {
     if (m_provBing->canCreateNextRequest())
         m_currProv = m_provBing;
+    else m_currProv = m_provSpot;
+    int index = random() % 6;
+    if (index < 3)
+        m_currProv = m_provCast;
     else m_currProv = m_provSpot;
     return m_currProv->createFirstRequest();
 }
@@ -215,6 +233,7 @@ void MainWindow::slotAddImage(QTableWidgetItem *item, int row, int col, int heig
     ui->tbwOverview->setItem(row, col, item);
     ui->tbwOverview->setRowHeight(row, height+8);
     ui->tbwOverview->setColumnWidth(col, 160);
+    ui->tbwOverview->scrollToBottom();
 }
 
 void MainWindow::slotDownloadsFinished(void)
@@ -247,6 +266,9 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
     {
         menu->addAction(new QAction(tr("Set as Background")));
         menu->addAction(new QAction(tr("Delete")));
+        QMenu *tags = new QMenu(tr("Tag Image"));
+        menu->addMenu(tags);
+        addTags(tags, img.id());
         menu->addAction(new QAction(tr("Show")));
     }
     QAction *action = menu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
@@ -274,6 +296,8 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
             QProcess::execute("/tmp/change.sh");
         }
         QString name = QDir::tempPath() + QDir::separator() + "change.sh";
+        // For gnome, this may work
+        // gsettings set org.gnome.desktop.background picture-uri file:///absolute/path/to/picture.jpg
 #endif
 //        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://download/spotlight/landscape/landscape_SlangkopLeuchtturmKommetjie_Südafrika.jpg")}'
 
@@ -338,8 +362,23 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 }
 
+void MainWindow::addTags(QMenu *tags, int id)
+{
+    QList<Tag> list = m_database.getTags();
+    for (int i = 0; i < list.size(); i++)
+    {
+        QAction *tag = new QAction(list[i].tag);
+        tag->setCheckable(true);
+        tags->addAction(tag);
+        if (m_database.isTagUsed(list[i].id, id))
+            tag->setChecked(true);
+        else tag->setChecked(false);
+    }
+}
+
 void MainWindow::initProviders(void)
 {
     m_provSpot = new SpotlightProvider(ui->teShowActions);
     m_provBing = new BingProvider(ui->teShowActions);
+    m_provCast = new ChromecastProvider(ui->teShowActions);
 }

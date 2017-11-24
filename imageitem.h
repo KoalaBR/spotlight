@@ -4,6 +4,7 @@
 #include <QImage>
 
 enum class Source {SRC_BING, SRC_CHROMECAST, SRC_SPOTLIGHT};
+enum class Format {FOR_PORTRAIT, FOR_LANDSCAPE, FOR_ANY};
 
 class ImageItem
 {
@@ -20,7 +21,9 @@ public:
     void    setImage(QImage img);
     void    setDeleted(int del);
     void    setPortrait(bool port);
+    void    setId(const int id);
 
+    int     id(void) const;
     int     width(void) const;
     int     height(void) const;
     void    setWidth(int width);
@@ -39,6 +42,7 @@ private:
     bool        m_portrait;
     QImage      m_img;
     Source      m_src;
+    int         m_id;
 };
 
 #endif // IMAGEITEM_H
