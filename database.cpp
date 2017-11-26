@@ -36,7 +36,8 @@ bool Database::openDatabase(void)
             qDebug() << "Fehler 2 "<<m_db.lastError().text();
             return false;
         }
-        sql = "Create table if not exists tagimg(tagid INTEGER, imageid INTEGER)";
+//        sql = "Create table if not exists tagimg(tagid INTEGER, imageid INTEGER)";
+        sql = "create table if not exists tagimg(tagid integer not null, picid integer not null, primary key(tagid, picid))";
         if (!query.exec(sql))
         {
             qDebug() << "Failed to create tagimg";
@@ -48,7 +49,6 @@ bool Database::openDatabase(void)
             qDebug() << "Error: creating tag table failed " << m_db.lastError().text();
             return false;
         }
-        sql = "create table if not exists tag_refs(tagid integer not null, picid, integer not null, primary key(tagid, picid))";
         QStringList  tags;
         sql = "Select count(*) as anz from tags";
         query.exec(sql);
@@ -152,7 +152,7 @@ void Database::addImage(ImageItem &item)
 QList<ImageItem> Database::getImages(const Filter f)
 {
     QSqlQuery query(m_db);
-    QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait from picdata ";
+    QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
     if (f == Filter::FI_DELETED_ONLY)
         sql += "where deleted=1";
     if (f == Filter::FI_IMAGES_ONLY)
@@ -173,8 +173,10 @@ QList<ImageItem> Database::getImages(const Filter f)
              bool   portrait = false;
              if (query.value(8).toInt() != 0)
                  portrait = true;
+             int id = query.value(9).toInt();
              ImageItem item(title, url, desc, portrait, src);
              item.setImage(img);
+             item.setId(id);
              item.setDeleted(del);
              list.append(item);
         }
@@ -201,6 +203,19 @@ void Database::deleteImage(ImageItem item)
     query.exec();
 }
 
+void Database::tagImage(bool checked, int tagid, int imgid)
+{
+    QSqlQuery query(m_db);
+    QString sql = "";
+    if (checked)
+        sql = "insert into tagimg(tagid, picid) values(:1, :2)";
+    else sql = "delete from tagimg where tagid=:1 and picid=:2";
+    query.prepare(sql);
+    query.bindValue(":1", tagid);
+    query.bindValue(":2", imgid);
+    query.exec();
+}
+
 QList<Tag> Database::getTags(void)
 {
     QList<Tag> list;
@@ -221,9 +236,9 @@ QList<Tag> Database::getTags(void)
     return list;
 }
 
-bool Database::isTagUsed(int tagid, int imgid)
+bool Database::isTagUsed(const int tagid, const int imgid)
 {
-    QString sql = "Select count(*) from tagimg where tagid=:1 and imageid=:2";
+    QString sql = "Select count(*) from tagimg where tagid=:1 and picid=:2";
     QSqlQuery query(m_db);
     query.prepare(sql);
     query.bindValue(":1", tagid);
@@ -235,5 +250,6 @@ bool Database::isTagUsed(int tagid, int imgid)
             return true;
         else return false;
     }
+    else qDebug() << query.lastError().text();
     return false;
 }

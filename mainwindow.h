@@ -39,22 +39,25 @@ public slots:
     void        slotImageDownloadComplete(ImageItem item);
     void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
     void        slotDownloadsFinished(void);
-    void        slotCustomMenuRequested(const QPoint pos);
+    void        slotContextMenuRequested(const QPoint pos);
+    void        slotTagged(void);
 protected:
     void        paintEvent(QPaintEvent *event);
     void        closeEvent(QCloseEvent *event);
     void        resizeEvent(QResizeEvent* event);
 private:
-    void        addTags(QMenu *tags, int id);           ///< Add all tags to the sub menu
+    void        addTags(QMenu *tags);           ///< Add all tags to the sub menu
     void        initProviders(void);
     QString     createFirstRequest(void);
     void        printLine(QString line);        ///< Fügt eine Zeile am Anfang ein.
     void        saveSettings(void);
     void        loadSettings(void);
+    void        initContextMenu(void);          ///< Create basic context menu for table
     QList<ImageItem> getItemList(QByteArray data);
     QList<ImageItem> getImageItem(QJsonObject image);
     void             createCacheDirs(void);
     QString          createStoredImageFilename(ImageItem &img);
+    void             markTagSelection(QMenu *menu, const ImageItem &item);
 
     Ui::MainWindow      *ui;
     QString              m_title;
@@ -69,6 +72,8 @@ private:
     SpotlightProvider   *m_provSpot;
     BingProvider        *m_provBing;
     ChromecastProvider  *m_provCast;
+    QMenu               *m_contextMenu;
+    QMenu               *m_tags;
 };
 
 #endif // MAINWINDOW_H

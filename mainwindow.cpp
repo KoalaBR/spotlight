@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
-                this, SLOT(slotCustomMenuRequested(const QPoint)));
+                this, SLOT(slotContextMenuRequested(const QPoint)));
     m_changeImgTimeout.start(C_MW_TimeOut);
     m_fadeTimer.setInterval(70);
     srand(static_cast<unsigned int>(time(NULL)));
@@ -55,9 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
         printLine(tr("Error: Could not open database"));
     slotChangeBackgroundTimeout();
     QList<Tag> list = m_database.getTags();
-    for (int i = 0; i < list.size(); i++)
-        qDebug() << list[i].id << list[i].tag;
-
+    initContextMenu();
 }
 
 MainWindow::~MainWindow()
@@ -68,6 +66,18 @@ MainWindow::~MainWindow()
     delete m_provCast;
     if (m_addThread != NULL)
         m_addThread->doShutdown();
+}
+
+void MainWindow::initContextMenu(void)
+{
+    m_contextMenu = new QMenu(this);
+    m_contextMenu->addAction(new QAction(tr("Set as Background")));
+    m_contextMenu->addAction(new QAction(tr("Delete")));
+    m_contextMenu->addAction(new QAction(tr("reload")));
+    m_tags = new QMenu(tr("Tag Image"));
+    m_contextMenu->addMenu(m_tags);
+    addTags(m_tags);
+    m_contextMenu->addAction(new QAction(tr("Show")));
 }
 
 void MainWindow::clickedHideGUI(void)
@@ -250,7 +260,7 @@ QString MainWindow::createStoredImageFilename(ImageItem &img)
     return fname;
 }
 
-void MainWindow::slotCustomMenuRequested(const QPoint pos)
+void MainWindow::slotContextMenuRequested(const QPoint pos)
 {
     QTableWidgetItem *item = ui->tbwOverview->currentItem();
     if (item == NULL)
@@ -259,19 +269,8 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
     ImageItem img = m_addThread->getItem(index);
     if (img.image().isNull())
         return;
-    QMenu *menu = new QMenu(this);
-    if (img.isDeleted())
-        menu->addAction(new QAction(tr("reload")));
-    else
-    {
-        menu->addAction(new QAction(tr("Set as Background")));
-        menu->addAction(new QAction(tr("Delete")));
-        QMenu *tags = new QMenu(tr("Tag Image"));
-        menu->addMenu(tags);
-        addTags(tags, img.id());
-        menu->addAction(new QAction(tr("Show")));
-    }
-    QAction *action = menu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
+    markTagSelection(m_tags, img);
+    QAction *action = m_contextMenu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
     if (action == NULL)
         return;
     QString fname = createStoredImageFilename(img);
@@ -317,7 +316,19 @@ void MainWindow::slotCustomMenuRequested(const QPoint pos)
         m_changeImgTimeout.start(C_MW_TimeOut);
 
     }
-    delete menu;
+}
+
+void MainWindow::slotTagged(void)
+{
+    QAction *act    = static_cast<QAction*>(sender());
+    int  tagid   = act->data().toInt();
+    bool checked = act->isChecked();
+    QTableWidgetItem *item = ui->tbwOverview->currentItem();
+    if (item == NULL)
+        return;
+    int index = item->data(Qt::UserRole +1).toInt();
+    ImageItem img = m_addThread->getItem(index);
+    m_database.tagImage(checked, tagid, img.id());
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -362,17 +373,27 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 }
 
-void MainWindow::addTags(QMenu *tags, int id)
+void MainWindow::addTags(QMenu *tags)
 {
     QList<Tag> list = m_database.getTags();
     for (int i = 0; i < list.size(); i++)
     {
         QAction *tag = new QAction(list[i].tag);
         tag->setCheckable(true);
+        tag->setData(list[i].id);
         tags->addAction(tag);
-        if (m_database.isTagUsed(list[i].id, id))
-            tag->setChecked(true);
-        else tag->setChecked(false);
+        this->connect(tag, SIGNAL(triggered()), this, SLOT(slotTagged()));
+    }
+}
+
+void MainWindow::markTagSelection(QMenu *menu, const ImageItem &item)
+{
+    QList<QAction*> list = menu->actions();
+    for (int i = 0; i < list.size(); i++)
+    {
+        QAction *tag = list[i];
+        int tagid = tag->data().toInt();
+        tag->setChecked(m_database.isTagUsed(tagid, item.id()));
     }
 }
 

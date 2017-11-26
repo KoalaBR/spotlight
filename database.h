@@ -22,6 +22,7 @@ public:
     QList<ImageItem>    getImages(const Filter f);
     void                addImage(ImageItem &item);
     void                deleteImage(ImageItem item);
+    void                tagImage(bool checked, int tagid, int imgid);
     bool                canDownloadImage(ImageItem item);
     bool                openDatabase(void);
     ImageItem           getRandomImage(void);
