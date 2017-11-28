@@ -193,7 +193,7 @@ void MainWindow::saveSettings(void)
     settings.setValue("orientation", ui->cmbOrientation->currentIndex());
     settings.setValue("title",  ui->cmbTitle->currentIndex());
     settings.setValue("geometry", this->geometry());
-
+    settings.setValue("display", ui->cmbDisplay->currentIndex());
 }
 
 void MainWindow::loadSettings(void)
@@ -203,6 +203,7 @@ void MainWindow::loadSettings(void)
     ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
     QRect rect = settings.value("geometry").toRect();
     this->setGeometry(rect);
+    ui->cmbDisplay->setCurrentIndex(settings.value("display", 0).toInt());
 }
 
 QList<ImageItem> MainWindow::getItemList(QByteArray data)

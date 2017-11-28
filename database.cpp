@@ -187,18 +187,21 @@ QList<ImageItem> Database::getImages(const Filter f)
 QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
 {
     QString invert = "";
-    if (tagid == 1)
-        invert = " not ";
     // select * from picdata where id in (select picid from tagimg where tagid=3)
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
-    sql += "where id %2 in (select picid from tagimg where tagid=%1)";
-    sql = sql.arg(tagid).arg(invert);
+    if (tagid != 1)
+    {
+        sql += "where id in (select picid from tagimg where tagid=%1)";
+        sql = sql.arg(tagid);
+    }
+    else sql += "where id not in (select picid from tagimg)";
     if (f == Filter::FI_DELETED_ONLY)
         sql += " and deleted=1 and ";
     if (f == Filter::FI_IMAGES_ONLY)
         sql += " and deleted=0 a";
     QList<ImageItem> list;
+    qDebug() << sql;
     if (query.exec(sql))
     {
         while (query.next())
