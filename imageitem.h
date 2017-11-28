@@ -10,7 +10,7 @@ class ImageItem
 {
 public:
     ImageItem(QString title, QString url, QString description, bool portrait, Source src=Source::SRC_SPOTLIGHT);
-    ImageItem() { m_url = "";}
+    ImageItem() { m_url = ""; m_deleted = false;}
 
     QString title() const;
     QString url() const;
@@ -22,6 +22,7 @@ public:
     void    setDeleted(int del);
     void    setPortrait(bool port);
     void    setId(const int id);
+    void    setTitle(const QString title);
 
     int     id(void) const;
     int     width(void) const;

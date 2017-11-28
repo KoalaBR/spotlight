@@ -67,6 +67,11 @@ void ImageItem::setId(const int id)
     m_id = id;
 }
 
+void ImageItem::setTitle(const QString title)
+{
+    m_title = title;
+}
+
 int ImageItem::id() const
 {
     return m_id;

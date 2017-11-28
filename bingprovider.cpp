@@ -12,6 +12,7 @@ BingProvider::BingProvider(QPlainTextEdit *edit) : AbstractProvider (edit)
 
 QString BingProvider::createFirstRequest()
 {
+    printLine("Searching on bing");
     QString url = "http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=de-DE";
     m_nextRequest = false;
     return url;

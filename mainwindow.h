@@ -41,6 +41,8 @@ public slots:
     void        slotDownloadsFinished(void);
     void        slotContextMenuRequested(const QPoint pos);
     void        slotTagged(void);
+    void        slotDisplayChanged(int index);
+    void        slotCellDoubleClicked(int row, int col);
 protected:
     void        paintEvent(QPaintEvent *event);
     void        closeEvent(QCloseEvent *event);

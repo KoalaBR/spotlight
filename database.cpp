@@ -184,6 +184,49 @@ QList<ImageItem> Database::getImages(const Filter f)
     return list;
 }
 
+QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
+{
+    QString invert = "";
+    if (tagid == 1)
+        invert = " not ";
+    // select * from picdata where id in (select picid from tagimg where tagid=3)
+    QSqlQuery query(m_db);
+    QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
+    sql += "where id %2 in (select picid from tagimg where tagid=%1)";
+    sql = sql.arg(tagid).arg(invert);
+    if (f == Filter::FI_DELETED_ONLY)
+        sql += " and deleted=1 and ";
+    if (f == Filter::FI_IMAGES_ONLY)
+        sql += " and deleted=0 a";
+    QList<ImageItem> list;
+    if (query.exec(sql))
+    {
+        while (query.next())
+        {
+             QByteArray byteArray = query.value(6).toByteArray();
+             QImage  img = QImage::fromData(byteArray);
+             QString url = query.value(0).toString();
+             QString md5 = query.value(1).toString();
+             int     del = query.value(2).toInt();
+             Source src  = static_cast<Source>(query.value(3).toInt());
+             QString title = query.value(4).toString();
+             QString desc  = query.value(7).toString();
+             bool   portrait = false;
+             if (query.value(8).toInt() != 0)
+                 portrait = true;
+             int id = query.value(9).toInt();
+             ImageItem item(title, url, desc, portrait, src);
+             item.setImage(img);
+             item.setId(id);
+             item.setDeleted(del);
+             list.append(item);
+        }
+    }
+    else qDebug() << query.lastError().text();
+    return list;
+
+}
+
 void Database::deleteImage(ImageItem item)
 {
     QSqlQuery query(m_db);

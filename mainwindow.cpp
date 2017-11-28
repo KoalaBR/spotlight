@@ -14,6 +14,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imageitem.h"
+#include "tableitemdelegate.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -32,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&m_fadeTimer,   SIGNAL(timeout()),                  this, SLOT(slotFadeTimeout()));
     connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
+    connect(ui->cmbDisplay, SIGNAL(currentIndexChanged(int)),   this, SLOT(slotDisplayChanged(int)));
+    connect(ui->tbwOverview,SIGNAL(cellDoubleClicked(int,int)), this, SLOT(slotCellDoubleClicked(int,int)));
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
@@ -48,9 +51,15 @@ MainWindow::MainWindow(QWidget *parent) :
     labelTextShadowEffect->setColor(QColor("#BBBBBB"));
     labelTextShadowEffect->setBlurRadius(0.4);
     labelTextShadowEffect->setOffset(1, 1);
+    ui->label_2->setGraphicsEffect(labelTextShadowEffect );
+    labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
+    labelTextShadowEffect->setColor(QColor("#BBBBBB"));
+    labelTextShadowEffect->setBlurRadius(0.4);
+    labelTextShadowEffect->setOffset(1, 1);
     ui->label_3->setGraphicsEffect(labelTextShadowEffect );
     initProviders();
     loadSettings();
+    ui->tbwOverview->setItemDelegate(new TableItemDelegate());
     if (!m_database.openDatabase())
         printLine(tr("Error: Could not open database"));
     slotChangeBackgroundTimeout();
@@ -205,11 +214,14 @@ QString MainWindow::createFirstRequest(void)
 {
     if (m_provBing->canCreateNextRequest())
         m_currProv = m_provBing;
-    else m_currProv = m_provSpot;
-    int index = random() % 6;
-    if (index < 3)
-        m_currProv = m_provCast;
-    else m_currProv = m_provSpot;
+    else
+    {
+        m_currProv = m_provSpot;
+        int index = random() % 6;
+        if (index < 3)
+            m_currProv = m_provCast;
+        else m_currProv = m_provSpot;
+    }
     return m_currProv->createFirstRequest();
 }
 
@@ -277,6 +289,14 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
     if (action->text() == tr("Set as Background"))
     {
 #ifdef Q_OS_LINUX        
+/** how to find out, how many virtual desktops we habe
+    xprop -root $propname
+    where propname may be:
+         Name                    Type        e.g. output    description
+        _NET_NUMBER_OF_DESKTOPS CARDINAL  = 4       number of desktops
+        _NET_CURRENT_DESKTOP    CARDINAL  = 0       current desktop, starting from 0
+        _NET_DESKTOP_NAMES      UTF8_STRING = "Arbeitsfläche 1", "Arbeitsfläche 2", "Arbeitsfläche 3", "Arbeitsfläche 4"  // name of each desktop
+*/
         FILE *file = fopen("/tmp/change.sh", "w");
 
         if (file != NULL)
@@ -329,6 +349,33 @@ void MainWindow::slotTagged(void)
     int index = item->data(Qt::UserRole +1).toInt();
     ImageItem img = m_addThread->getItem(index);
     m_database.tagImage(checked, tagid, img.id());
+}
+
+void MainWindow::slotDisplayChanged(int index)
+{
+    if (index == 0)
+        m_addThread->doShowAsFlat(true);
+    else m_addThread->doShowAsFlat(false);
+    ui->tbwOverview->setRowCount(0);
+    ui->tbwOverview->clearContents();
+    m_addThread->doClear();
+    m_addThread->doInit(Filter::FI_ALL);
+}
+
+void MainWindow::slotCellDoubleClicked(int row, int col)
+{
+    if (ui->cmbDisplay->currentIndex() == 0)    // Flat display
+        return;     // Nothing to do
+    QTableWidgetItem *item = ui->tbwOverview->item(row, col);
+    int id = item->data(Qt::UserRole +3).toInt();
+    DisplayCommand cmd = static_cast<DisplayCommand>(item->data(Qt::UserRole + 2).toInt());
+    ui->tbwOverview->clear();
+    ui->tbwOverview->setColumnCount(4);
+    ui->tbwOverview->setRowCount(0);
+    if (cmd == DisplayCommand::DIS_TAG)
+        m_addThread->doShowTag(id);
+    if (cmd == DisplayCommand::DIS_UP)
+        m_addThread->doShowTopLevel();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)

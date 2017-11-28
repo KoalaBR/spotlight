@@ -20,6 +20,7 @@ public:
     ~Database();
 
     QList<ImageItem>    getImages(const Filter f);
+    QList<ImageItem>    getImagesByTag(const Filter f, int tagid);
     void                addImage(ImageItem &item);
     void                deleteImage(ImageItem item);
     void                tagImage(bool checked, int tagid, int imgid);

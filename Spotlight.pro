@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     abstractprovider.cpp \
     spotlightprovider.cpp \
     bingprovider.cpp \
-    chromecastprovider.cpp
+    chromecastprovider.cpp \
+    tableitemdelegate.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -42,7 +43,8 @@ HEADERS  += mainwindow.h \
     abstractprovider.h \
     spotlightprovider.h \
     bingprovider.h \
-    chromecastprovider.h
+    chromecastprovider.h \
+    tableitemdelegate.h
 
 FORMS    += mainwindow.ui
 # Only for Visual Studio 2016
@@ -55,3 +57,6 @@ windows {
         INCLUDEPATH += "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
         LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.10240.0/ucrt/x64"    }
 }
+
+RESOURCES += \
+    resources.qrc
