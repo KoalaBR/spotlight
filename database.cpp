@@ -74,7 +74,7 @@ ImageItem Database::getRandomImage()
     QList<ImageItem> list = getImages(Filter::FI_IMAGES_ONLY);
     if (list.size() == 0)
         return ImageItem();
-    int index = random() % list.size();
+    int index = rand() % list.size();
     return list[index];
 }
 

@@ -55,7 +55,9 @@ windows {
     *-msvc* {
         # MSVC
         INCLUDEPATH += "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
-        LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.10240.0/ucrt/x64"    }
+        LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.16299.0/um/x64"
+        LIBS += -lUser32
+    }
 }
 
 RESOURCES += \

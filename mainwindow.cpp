@@ -10,12 +10,15 @@
 #include <QProcess>
 
 #include <time.h>
+#include <stdlib.h>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imageitem.h"
 #include "tableitemdelegate.h"
-
+#ifdef Q_OS_WIN
+    #include <Windows.h>
+#endif
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -202,7 +205,8 @@ void MainWindow::loadSettings(void)
     ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
     ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
     QRect rect = settings.value("geometry").toRect();
-    this->setGeometry(rect);
+    if (rect.isValid())
+        this->setGeometry(rect);
     ui->cmbDisplay->setCurrentIndex(settings.value("display", 0).toInt());
 }
 
@@ -218,7 +222,7 @@ QString MainWindow::createFirstRequest(void)
     else
     {
         m_currProv = m_provSpot;
-        int index = random() % 6;
+        int index = rand() % 6;
         if (index < 3)
             m_currProv = m_provCast;
         else m_currProv = m_provSpot;
@@ -318,6 +322,13 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         QString name = QDir::tempPath() + QDir::separator() + "change.sh";
         // For gnome, this may work
         // gsettings set org.gnome.desktop.background picture-uri file:///absolute/path/to/picture.jpg
+#else
+        wchar_t path[500];
+        fname = fname.replace("/", "\\");
+        qDebug() << fname;
+        fname.toWCharArray(path);
+        if (!SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*) path, SPIF_UPDATEINIFILE))
+            qDebug() << "Not set";
 #endif
 //        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://download/spotlight/landscape/landscape_SlangkopLeuchtturmKommetjie_Südafrika.jpg")}'
 
