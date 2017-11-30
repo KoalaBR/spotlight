@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     createCacheDirs();
+    if (!m_database.openDatabase())
+        printLine(tr("Error: Could not open database"));
     m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
     m_addThread->start();
     m_currProv = NULL;
@@ -63,8 +65,6 @@ MainWindow::MainWindow(QWidget *parent) :
     initProviders();
     loadSettings();
     ui->tbwOverview->setItemDelegate(new TableItemDelegate());
-    if (!m_database.openDatabase())
-        printLine(tr("Error: Could not open database"));
     slotChangeBackgroundTimeout();
     QList<Tag> list = m_database.getTags();
     initContextMenu();
@@ -108,10 +108,18 @@ void MainWindow::clickedSearch(void)
 {
     // make sure that chromecast respects what we are searching
     // 0 = Portrait, 1 = landscape, 2 = both
+    m_addThread->doClear();
+    if (ui->cmbDisplay->currentIndex() > 0)        // By Tags
+    {
+        // Switch to Tag "New"
+        ui->tbwOverview->clear();
+        ui->tbwOverview->setColumnCount(4);
+        ui->tbwOverview->setRowCount(0);
+        m_addThread->doShowTag(1);
+    }
     m_provCast->setFormat(static_cast<Format>(ui->cmbOrientation->currentIndex()));
     QUrl url = QUrl(createFirstRequest());
     ui->teShowActions->clear();
-    m_addThread->doClear();
     m_downloader.downloadJSON(url);
 }
 

@@ -2,10 +2,10 @@
 
 #include <QDebug>
 
-
 AddImageThread::AddImageThread(Database *db, QTableWidget *over) : QThread(NULL)
 {
     m_db = db;
+    m_id = 0;
     m_overview = over;
     m_currCMD  = ThreadCommand::CMD_IDLE;
     m_showFlat = true;
@@ -171,7 +171,7 @@ void AddImageThread::run()
         switch(m_currCMD)
         {
             case ThreadCommand::CMD_IDLE:
-                 this->usleep(1000);
+                 this->msleep(250);
                  break;
             case ThreadCommand::CMD_CLEAR:
                  this->clearBackground();
