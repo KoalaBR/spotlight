@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     spotlightprovider.cpp \
     bingprovider.cpp \
     chromecastprovider.cpp \
-    tableitemdelegate.cpp
+    tableitemdelegate.cpp \
+    abstractdesktopsupport.cpp \
+    linuxdesktopprovider.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -44,7 +46,9 @@ HEADERS  += mainwindow.h \
     spotlightprovider.h \
     bingprovider.h \
     chromecastprovider.h \
-    tableitemdelegate.h
+    tableitemdelegate.h \
+    abstractdesktopsupport.h \
+    linuxdesktopprovider.h
 
 FORMS    += mainwindow.ui
 # Only for Visual Studio 2016

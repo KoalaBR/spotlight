@@ -63,7 +63,7 @@ QList<ImageItem> ChromecastProvider::getItemList(QByteArray data)
             }
         }
         // Just a few pics, not all at once
-        if (list.size() > 10)
+        if (i > 10)
             break;
     }
     return list;

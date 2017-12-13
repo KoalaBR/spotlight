@@ -9,7 +9,7 @@
 #include "imageitem.h"
 
 
-#define C_AIT_Index Qt::UserRole +1
+#define C_AIT_Index Qt::UserRole +1     ///< The index of the image in m_images
 #define C_AIT_Type  Qt::UserRole +2
 
 enum class ThreadCommand  {CMD_INIT, CMD_IDLE, CMD_ADDIMAGE, CMD_CLEAR, CMD_SHUTDOWN};  ///< what does the thread do next?
@@ -42,7 +42,7 @@ private:
     void        addImage(ImageItem item, bool newPic = false, DisplayCommand cmd=DisplayCommand::DIS_PIC);
     void        clearBackground(void);
     void        initOverviewFlat(QList<ImageItem> images);
-    void        showLevel(QList<ImageItem> images, int id);
+    void        showLevel(QList<ImageItem> images, int level);
     QTableWidgetItem    *createTableItem(ImageItem item, DisplayCommand cmd = DisplayCommand::DIS_PIC);
 
     Database        *m_db;

@@ -54,11 +54,13 @@ void AddImageThread::initOverview(Filter f)
     m_height = 0;
     m_images.clear();
     QList<ImageItem> images;
+    // Flat display (just as a grid of images)?
     if (m_showFlat)
-        images = m_db->getImages(f);
+        images = m_db->getImages(f);    // ok, get list of images currently stored in the db
     else
     if (m_id > 0)
         images = m_db->getImagesByTag(f, m_id);
+    // Quit if we don't have images for flat mode
     if ((images.size() == 0) && m_showFlat)
         return;
     if (m_showFlat)
@@ -85,9 +87,9 @@ void AddImageThread::initOverviewFlat(QList<ImageItem> images)
  * @param images
  * @param level  if 0 show tags as folders otherwise show images from list plus "up"
  */
-void AddImageThread::showLevel(QList<ImageItem> images, int id)
+void AddImageThread::showLevel(QList<ImageItem> images, int level)
 {
-    if (id == 0)
+    if (level == 0)
     {
         QList<Tag> tags = m_db->getTags();
         for (int i = 0; i < tags.size(); i++)

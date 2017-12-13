@@ -57,8 +57,8 @@ bool Database::openDatabase(void)
             if (query.value(0).toInt() > 0)
                 return true;
         }
-        tags << "Neu" << "Landschaften" << "Tiere" << "Bauwerke"
-             << "Himmel";
+        tags << "Neu"      << "Landschaften" << "Tiere"
+             << "Bauwerke" << "Himmel" ;
         for (int i = 0; i < tags.length(); i++)
         {
             sql = "insert into tags(name) values('"+ tags[i]+"')";
@@ -117,11 +117,11 @@ void Database::addImage(ImageItem &item)
     QImage img = item.image();
     if (item.isPortrait())
     {
-        img = img.scaledToHeight(150);
+        img = img.scaledToHeight(150, Qt::SmoothTransformation);
     }
     else
     {
-        img = img.scaledToWidth(150);
+        img = img.scaledToWidth(150, Qt::SmoothTransformation);
     }
     item.setImage(img);
     QByteArray ba;
@@ -236,6 +236,7 @@ void Database::deleteImage(ImageItem item)
     QString sql = "Update picdata set deleted=1 where ";
     if (item.source() == Source::SRC_BING)
     {
+        sql += QString("id = %1").arg(item.id());
         // Can't use the url, need to rely on days
     }
     else

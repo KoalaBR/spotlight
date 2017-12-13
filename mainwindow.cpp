@@ -68,6 +68,11 @@ MainWindow::MainWindow(QWidget *parent) :
     slotChangeBackgroundTimeout();
     QList<Tag> list = m_database.getTags();
     initContextMenu();
+#ifdef Q_OS_LINUX
+    m_desktop = new LinuxDesktopProvider();
+#endif
+#ifdef Q_OS_WIN
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -255,6 +260,7 @@ void MainWindow::createCacheDirs(void)
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
     QString filename = item.filename();
+    qDebug() << "Filename:" << filename;
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());
@@ -309,11 +315,6 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         _NET_NUMBER_OF_DESKTOPS CARDINAL  = 4       number of desktops
         _NET_CURRENT_DESKTOP    CARDINAL  = 0       current desktop, starting from 0
         _NET_DESKTOP_NAMES      UTF8_STRING = "Arbeitsfläche 1", "Arbeitsfläche 2", "Arbeitsfläche 3", "Arbeitsfläche 4"  // name of each desktop
-*/
-        FILE *file = fopen("/tmp/change.sh", "w");
-
-        if (file != NULL)
-        {
             fprintf(file, "qdbus ");
             fprintf(file, "org.kde.plasmashell ");
             fprintf(file, "/PlasmaShell ");
@@ -323,13 +324,9 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
             fprintf(file, "d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");");
             fprintf(file, "d.writeConfig(\"Image\", \"file://%s\")}'", fname.toStdString().c_str() );
             fclose(file);
-            QFile file("/tmp/change.sh");
-            file.setPermissions(QFileDevice::ExeOwner | QFileDevice::ReadOwner | QFileDevice::WriteOwner);
-            QProcess::execute("/tmp/change.sh");
-        }
-        QString name = QDir::tempPath() + QDir::separator() + "change.sh";
-        // For gnome, this may work
-        // gsettings set org.gnome.desktop.background picture-uri file:///absolute/path/to/picture.jpg
+*/
+        m_desktop->setWallpaper(-1, fname);
+
 #else
         wchar_t path[500];
         fname = fname.replace("/", "\\");
@@ -355,6 +352,18 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         }
         m_changeImgTimeout.start(C_MW_TimeOut);
 
+    }
+    else
+    if (action->text() == tr("Delete"))
+    {
+        QFile file(fname);
+        bool res = file.remove();
+        if (res)
+        {
+            item->setBackground(Qt::red);
+            m_database.deleteImage(img);
+        }
+        else printLine(tr("Konnte Bild nicht löschen"));
     }
 }
 

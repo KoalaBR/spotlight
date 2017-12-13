@@ -12,6 +12,7 @@
 #include "spotlightprovider.h"
 #include "bingprovider.h"
 #include "chromecastprovider.h"
+#include "linuxdesktopprovider.h"
 
 namespace Ui {
 class MainWindow;
@@ -76,6 +77,7 @@ private:
     ChromecastProvider  *m_provCast;
     QMenu               *m_contextMenu;
     QMenu               *m_tags;
+    AbstractDesktopSupport  *m_desktop;
 };
 
 #endif // MAINWINDOW_H
