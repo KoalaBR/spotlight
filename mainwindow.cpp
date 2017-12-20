@@ -18,6 +18,7 @@
 #include "tableitemdelegate.h"
 #ifdef Q_OS_WIN
     #include <Windows.h>
+    #include "shobjidl.h"
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -328,12 +329,23 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         m_desktop->setWallpaper(-1, fname);
 
 #else
-        wchar_t path[500];
+//        wchar_t path[500];
         fname = fname.replace("/", "\\");
-        qDebug() << fname;
-        fname.toWCharArray(path);
-        if (!SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*) path, SPIF_UPDATEINIFILE))
-            qDebug() << "Not set";
+//        qDebug() << fname;
+//        fname.toWCharArray(path);
+//        if (!SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*) path, SPIF_UPDATEINIFILE))
+//            qDebug() << "Not set";
+        HRESULT hr = CoInitialize(nullptr);
+        IDesktopWallpaper *pDesktopWallpaper = nullptr;
+        hr = CoCreateInstance(__uuidof(DesktopWallpaper), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pDesktopWallpaper));
+        if (FAILED(hr))
+        {
+            qDebug() << "error";
+        }
+        else
+        {
+            pDesktopWallpaper->SetWallpaper(nullptr, fname.toStdWString().c_str());
+        }
 #endif
 //        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://download/spotlight/landscape/landscape_SlangkopLeuchtturmKommetjie_Südafrika.jpg")}'
 
