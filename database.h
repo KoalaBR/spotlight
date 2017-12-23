@@ -12,6 +12,7 @@ typedef struct {
 } Tag;
 
 enum class Filter {FI_ALL, FI_DELETED_ONLY, FI_IMAGES_ONLY };
+enum class ImageFormat {IF_ANY, IF_PORTRAIT, IF_LANDSCAPE };
 
 class Database
 {
@@ -26,7 +27,7 @@ public:
     void                tagImage(bool checked, int tagid, int imgid);
     bool                canDownloadImage(ImageItem item);
     bool                openDatabase(void);
-    ImageItem           getRandomImage(void);
+    ImageItem           getRandomImage();
     QList<Tag>          getTags(void);
     bool                isTagUsed(const int tagid, const int imgid);        ///< Returns true if the given tag is used for the image
 

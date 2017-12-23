@@ -206,7 +206,7 @@ void MainWindow::printLine(QString line)
 
 void MainWindow::saveSettings(void)
 {
-    QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
+    QSettings   settings(C_MW_IniFile, QSettings::IniFormat);
     settings.setValue("orientation", ui->cmbOrientation->currentIndex());
     settings.setValue("title",  ui->cmbTitle->currentIndex());
     settings.setValue("geometry", this->geometry());
@@ -215,9 +215,9 @@ void MainWindow::saveSettings(void)
 
 void MainWindow::loadSettings(void)
 {
-    QSettings   settings(C_MW_IniFile, QSettings::NativeFormat);
+    QSettings   settings(C_MW_IniFile, QSettings::IniFormat);
     ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
-    ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
+    ui->cmbTitle->setCurrentIndex(settings.value("title", -1).toInt());
     QRect rect = settings.value("geometry").toRect();
     if (rect.isValid())
         this->setGeometry(rect);

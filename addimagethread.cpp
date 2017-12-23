@@ -92,12 +92,15 @@ void AddImageThread::showLevel(QList<ImageItem> images, int level)
     if (level == 0)
     {
         QList<Tag> tags = m_db->getTags();
+
         for (int i = 0; i < tags.size(); i++)
         {
             ImageItem item;
             item.setId(tags[i].id);
             item.setTitle(tags[i].tag);
-            addImage(item, false, DisplayCommand::DIS_TAG);
+            if (tags[i].id != 2)
+                addImage(item, false, DisplayCommand::DIS_TAG);
+            else addImage(item, false, DisplayCommand::DIS_DEL);
             if (m_currCMD == ThreadCommand::CMD_SHUTDOWN)
                 break;
         }
@@ -218,6 +221,16 @@ QTableWidgetItem *AddImageThread::createTableItem(ImageItem item, DisplayCommand
         QImage img(":/icons/folderup.png");
         pic->setData(Qt::DecorationRole, img.scaled(64,64));
         pic->setData(Qt::DisplayRole, item.title());
+        pic->setData(Qt::TextAlignmentRole, Qt::AlignBottom);
+    }
+    else
+    if (cmd == DisplayCommand::DIS_DEL)
+    {
+        QImage img(":/icons/folderbin.png");
+        pic->setData(Qt::UserRole +2, static_cast<int>(DisplayCommand::DIS_TAG));
+        pic->setData(Qt::DecorationRole, img.scaled(64,64));
+        pic->setData(Qt::DisplayRole, item.title());
+        pic->setData(Qt::UserRole +3, item.id());
         pic->setData(Qt::TextAlignmentRole, Qt::AlignBottom);
     }
     return pic;

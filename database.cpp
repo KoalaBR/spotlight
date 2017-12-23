@@ -57,8 +57,8 @@ bool Database::openDatabase(void)
             if (query.value(0).toInt() > 0)
                 return true;
         }
-        tags << "Neu"      << "Landschaften" << "Tiere"
-             << "Bauwerke" << "Himmel" ;
+        tags << "Neu"      << "Gelöscht" << "Landschaften"
+             << "Tiere"    << "Bauwerke" << "Himmel" ;
         for (int i = 0; i < tags.length(); i++)
         {
             sql = "insert into tags(name) values('"+ tags[i]+"')";
@@ -178,30 +178,47 @@ QList<ImageItem> Database::getImages(const Filter f)
              item.setImage(img);
              item.setId(id);
              item.setDeleted(del);
-             list.append(item);
+//             bool add = false;
+//             if (form == ImageFormat::IF_ANY)
+//                 add = true;
+//             if ((form == ImageFormat::IF_LANDSCAPE) && (!portrait))
+//                 add = true;
+//             if ((form == ImageFormat::IF_PORTRAIT) && portrait)
+//                 add = true;
+//             if (add)
+                list.append(item);
         }
     }
     return list;
 }
 
+/**
+ * @brief Database::getImagesByTag
+ * Gets the images by tagid.
+ * @param f
+ * @param tagid  1 = all items not tagged are "new", 2 = return all items which are deleted
+ * @return
+ */
 QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
 {
     QString invert = "";
     // select * from picdata where id in (select picid from tagimg where tagid=3)
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
-    if (tagid != 1)
+    if (tagid > 2)
     {
         sql += "where id in (select picid from tagimg where tagid=%1)";
         sql = sql.arg(tagid);
     }
+    else
+    if (tagid == 2)
+        sql += "where deleted=1";
     else sql += "where id not in (select picid from tagimg)";
     if (f == Filter::FI_DELETED_ONLY)
         sql += " and deleted=1 and ";
     if (f == Filter::FI_IMAGES_ONLY)
         sql += " and deleted=0 a";
     QList<ImageItem> list;
-    qDebug() << sql;
     if (query.exec(sql))
     {
         while (query.next())

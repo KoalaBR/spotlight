@@ -16,7 +16,8 @@ enum class ThreadCommand  {CMD_INIT, CMD_IDLE, CMD_ADDIMAGE, CMD_CLEAR, CMD_SHUT
 
 enum class DisplayCommand {DIS_TAG = 0,     ///< this one is a dir
                            DIS_UP  = 1,     ///< we are in a dir, get to top level
-                           DIS_PIC = 2      ///< this is a picture
+                           DIS_PIC = 2,     ///< this is a picture
+                           DIS_DEL = 3      ///< Directory (deleted) icon
                           };
 
 class AddImageThread : public QThread
