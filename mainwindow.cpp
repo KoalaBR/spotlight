@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
                 this, SLOT(slotContextMenuRequested(const QPoint)));
+    connect(ui->cmbOrientation, SIGNAL(currentIndexChanged(int)), this, SLOT(slotOrientationChanged(int)));
     m_changeImgTimeout.start(C_MW_TimeOut);
     m_fadeTimer.setInterval(70);
     srand(static_cast<unsigned int>(time(NULL)));
@@ -222,6 +223,7 @@ void MainWindow::loadSettings(void)
     if (rect.isValid())
         this->setGeometry(rect);
     ui->cmbDisplay->setCurrentIndex(settings.value("display", 0).toInt());
+    slotOrientationChanged(settings.value("orientation", 0).toInt());
 }
 
 QList<ImageItem> MainWindow::getItemList(QByteArray data)
@@ -400,7 +402,29 @@ void MainWindow::slotDisplayChanged(int index)
     ui->tbwOverview->setRowCount(0);
     ui->tbwOverview->clearContents();
     m_addThread->doClear();
-    m_addThread->doInit(Filter::FI_ALL);
+    m_addThread->doInit(getCurrentFilter());
+}
+
+Filter MainWindow::getCurrentFilter(void)
+{
+    int index = ui->cmbOrientation->currentIndex();
+    Filter fi = Filter::FI_ALL;
+    if (index == 0)  // Portrait
+        fi = Filter::FI_PORTRAIT;
+    else
+    if (index == 1)  // Landscape)
+        fi = Filter::FI_LANDSCAPE;
+    return fi;
+}
+
+void MainWindow::slotOrientationChanged(int index)
+{
+    Q_UNUSED(index);
+    Filter fi = getCurrentFilter();
+    m_database.setFilter(fi);
+    ui->tbwOverview->clearContents();
+    m_addThread->doInit(fi);
+    slotChangeBackgroundTimeout();      // Change background
 }
 
 void MainWindow::slotCellDoubleClicked(int row, int col)
@@ -457,7 +481,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-    m_addThread->doInit(Filter::FI_ALL);
+    m_addThread->doInit(getCurrentFilter());
 
 }
 

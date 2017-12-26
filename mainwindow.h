@@ -43,6 +43,7 @@ public slots:
     void        slotContextMenuRequested(const QPoint pos);
     void        slotTagged(void);
     void        slotDisplayChanged(int index);
+    void        slotOrientationChanged(int index);
     void        slotCellDoubleClicked(int row, int col);
 protected:
     void        paintEvent(QPaintEvent *event);
@@ -61,6 +62,7 @@ private:
     void             createCacheDirs(void);
     QString          createStoredImageFilename(ImageItem &img);
     void             markTagSelection(QMenu *menu, const ImageItem &item);
+    Filter           getCurrentFilter(void);        ///< What type of image (portrait / landscape) to display?
 
     Ui::MainWindow      *ui;
     QString              m_title;

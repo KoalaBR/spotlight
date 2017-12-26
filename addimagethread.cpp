@@ -196,7 +196,7 @@ void AddImageThread::run()
     }
 }
 
-QTableWidgetItem *AddImageThread::createTableItem(ImageItem item, DisplayCommand cmd)
+QTableWidgetItem *AddImageThread::createTableItem(ImageItem item, const DisplayCommand cmd)
 {
     QTableWidgetItem *pic = new QTableWidgetItem();
     pic->setData(Qt::ToolTipRole, item.title());

@@ -7,12 +7,17 @@
 
 Database::Database()
 {
-
+    m_filter = Filter::FI_ALL;
 }
 
 Database::~Database()
 {
     m_db.close();
+}
+
+void Database::setFilter(Filter fi)
+{
+    m_filter = fi;
 }
 
 bool Database::openDatabase(void)
@@ -69,9 +74,9 @@ bool Database::openDatabase(void)
     }
 }
 
-ImageItem Database::getRandomImage()
+ImageItem Database::getRandomImage(void)
 {
-    QList<ImageItem> list = getImages(Filter::FI_IMAGES_ONLY);
+    QList<ImageItem> list = getImages(m_filter);
     if (list.size() == 0)
         return ImageItem();
     int index = rand() % list.size();
@@ -153,10 +158,10 @@ QList<ImageItem> Database::getImages(const Filter f)
 {
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
-    if (f == Filter::FI_DELETED_ONLY)
-        sql += "where deleted=1";
-    if (f == Filter::FI_IMAGES_ONLY)
-        sql += "where deleted=0";
+    if (f == Filter::FI_LANDSCAPE)
+        sql += "where portrait=0";
+    if (f == Filter::FI_PORTRAIT)
+        sql += "where portrait=1";
     QList<ImageItem> list;
     if (query.exec(sql))
     {
@@ -165,7 +170,7 @@ QList<ImageItem> Database::getImages(const Filter f)
              QByteArray byteArray = query.value(6).toByteArray();
              QImage  img = QImage::fromData(byteArray);
              QString url = query.value(0).toString();
-             QString md5 = query.value(1).toString();
+//             QString md5 = query.value(1).toString();
              int     del = query.value(2).toInt();
              Source src  = static_cast<Source>(query.value(3).toInt());
              QString title = query.value(4).toString();
@@ -201,7 +206,6 @@ QList<ImageItem> Database::getImages(const Filter f)
  */
 QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
 {
-    QString invert = "";
     // select * from picdata where id in (select picid from tagimg where tagid=3)
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
@@ -213,11 +217,11 @@ QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
     else
     if (tagid == 2)
         sql += "where deleted=1";
-    else sql += "where id not in (select picid from tagimg)";
-    if (f == Filter::FI_DELETED_ONLY)
-        sql += " and deleted=1 and ";
-    if (f == Filter::FI_IMAGES_ONLY)
-        sql += " and deleted=0 a";
+    else sql += "where id not in (select picid from tagimg) and deleted=0";
+    if (f == Filter::FI_PORTRAIT)
+        sql += " and portrait=1";
+    if (f == Filter::FI_LANDSCAPE)
+        sql += " and portrait=0";
     QList<ImageItem> list;
     if (query.exec(sql))
     {

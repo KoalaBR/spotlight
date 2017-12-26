@@ -11,7 +11,8 @@ typedef struct {
     int         id;
 } Tag;
 
-enum class Filter {FI_ALL, FI_DELETED_ONLY, FI_IMAGES_ONLY };
+
+enum class Filter {FI_ALL, FI_LANDSCAPE, FI_PORTRAIT};   ///< What picture format to display (all, only portrait or only landscape)
 enum class ImageFormat {IF_ANY, IF_PORTRAIT, IF_LANDSCAPE };
 
 class Database
@@ -27,13 +28,15 @@ public:
     void                tagImage(bool checked, int tagid, int imgid);
     bool                canDownloadImage(ImageItem item);
     bool                openDatabase(void);
-    ImageItem           getRandomImage();
+    ImageItem           getRandomImage(void);
     QList<Tag>          getTags(void);
     bool                isTagUsed(const int tagid, const int imgid);        ///< Returns true if the given tag is used for the image
+    void                setFilter(Filter fi);
 
 private:
 
     QSqlDatabase    m_db;
+    Filter          m_filter;           ///< Which type of images will be displayed?
 };
 
 #endif // DATABASE_H

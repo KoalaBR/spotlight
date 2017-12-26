@@ -44,7 +44,7 @@ private:
     void        clearBackground(void);
     void        initOverviewFlat(QList<ImageItem> images);
     void        showLevel(QList<ImageItem> images, int level);
-    QTableWidgetItem    *createTableItem(ImageItem item, DisplayCommand cmd = DisplayCommand::DIS_PIC);
+    QTableWidgetItem    *createTableItem(ImageItem item, const DisplayCommand cmd = DisplayCommand::DIS_PIC);
 
     Database        *m_db;
     QTableWidget    *m_overview;
