@@ -16,6 +16,8 @@
 #include "ui_mainwindow.h"
 #include "imageitem.h"
 #include "tableitemdelegate.h"
+#include "managetags.h"
+
 #ifdef Q_OS_WIN
     #include <Windows.h>
     #include "shobjidl.h"
@@ -41,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
     connect(ui->cmbDisplay, SIGNAL(currentIndexChanged(int)),   this, SLOT(slotDisplayChanged(int)));
     connect(ui->tbwOverview,SIGNAL(cellDoubleClicked(int,int)), this, SLOT(slotCellDoubleClicked(int,int)));
+    connect(ui->tbTags,     SIGNAL(clicked(bool)),              this, SLOT(slotManageTags()));
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
@@ -109,6 +112,12 @@ void MainWindow::clickedHideGUI(void)
 void MainWindow::clickedShowGUI(void)
 {
     ui->stackedWidget->setCurrentIndex(0);
+}
+
+void MainWindow::slotManageTags()
+{
+    ManageTags tags(&m_database, this);
+    tags.exec();
 }
 
 void MainWindow::clickedSearch(void)

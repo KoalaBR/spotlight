@@ -31,9 +31,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 public slots:
-    void        clickedHideGUI(void);
-    void        clickedSearch(void);
-    void        clickedShowGUI(void);
+    void        clickedHideGUI(void);               ///< Hides most of the GUI just to show the image in the background
+    void        clickedSearch(void);                ///< Start searching for new pictures
+    void        clickedShowGUI(void);               ///< show Widgets again
+    void        slotManageTags(void);
     void        slotChangeBackgroundTimeout(void);
     void        slotFadeTimeout(void);
     void        slotDownloadComplete(QString    content);

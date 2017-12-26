@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     chromecastprovider.cpp \
     tableitemdelegate.cpp \
     abstractdesktopsupport.cpp \
-    linuxdesktopprovider.cpp
+    linuxdesktopprovider.cpp \
+    managetags.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -48,9 +49,11 @@ HEADERS  += mainwindow.h \
     chromecastprovider.h \
     tableitemdelegate.h \
     abstractdesktopsupport.h \
-    linuxdesktopprovider.h
+    linuxdesktopprovider.h \
+    managetags.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    managetags.ui
 # Only for Visual Studio 2016
 windows {
     *-g++* {
