@@ -1,6 +1,7 @@
 #include "imageitem.h"
 #include <QDebug>
 #include <QDir>
+#include <QCryptographicHash>
 
 ImageItem::ImageItem(QString title,          QString url,
                      QString description="", bool    portrait=false, Source src)
@@ -132,8 +133,8 @@ QString ImageItem::filename(void)
         int index = m_url.indexOf(".com/");
         if (index < 0)
         {
-            fname = "%1";
-            fname = fname.arg(rand());
+            fname = QString(QCryptographicHash::hash(m_url.toUtf8(),QCryptographicHash::Md5).toHex());
+            fname = fname.left(20);
         }
         else
         {

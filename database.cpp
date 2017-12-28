@@ -20,6 +20,49 @@ void Database::setFilter(Filter fi)
     m_filter = fi;
 }
 
+void Database::addTag(int id, QString name)
+{
+    QSqlQuery query(m_db);
+    if (id < 0)
+    {
+        // new tag
+        query.prepare("Insert into tags(name) values(:1)");
+        query.bindValue(":1", name);
+        if (!query.exec())
+        {
+            qDebug() << "Error: Insert into tags failes";
+        }
+    }
+    else
+    {
+        // Update existing tag
+        query.prepare("Update tags set name=:1 where id=:2");
+        query.bindValue(":1",name);
+        query.bindValue(":2", id);
+        if (!query.exec())
+        {
+            qDebug() << "Update tags failed";
+        }
+    }
+}
+
+void Database::deleteTag(int id)
+{
+    QString sql = "delete from tags where id=%1";
+    sql = sql.arg(id);
+    QSqlQuery query(m_db);
+    if (!query.exec(sql))
+    {
+        qDebug() << "Error: Delete from tags failed";
+    }
+    sql = "delete from tagimg where tagid=%1";
+    sql = sql.arg(id);
+    if (!query.exec(sql))
+    {
+        qDebug() << "Error: Delete from tagimg failed";
+    }
+}
+
 bool Database::openDatabase(void)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
@@ -159,9 +202,11 @@ QList<ImageItem> Database::getImages(const Filter f)
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
     if (f == Filter::FI_LANDSCAPE)
-        sql += "where portrait=0";
+        sql += "where portrait=0 and deleted=0";
+    else
     if (f == Filter::FI_PORTRAIT)
-        sql += "where portrait=1";
+        sql += "where portrait=1 and deleted=0";
+    else sql += "where deleted=0";
     QList<ImageItem> list;
     if (query.exec(sql))
     {

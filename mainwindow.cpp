@@ -118,6 +118,11 @@ void MainWindow::slotManageTags()
 {
     ManageTags tags(&m_database, this);
     tags.exec();
+    delete m_tags;
+    // update the context menu with the new tags
+    initContextMenu();
+    // reset display with new tags
+    slotDisplayChanged(ui->cmbDisplay->currentIndex());
 }
 
 void MainWindow::clickedSearch(void)
@@ -272,7 +277,6 @@ void MainWindow::createCacheDirs(void)
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
     QString filename = item.filename();
-    qDebug() << "Filename:" << filename;
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());

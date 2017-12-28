@@ -32,7 +32,8 @@ public:
     QList<Tag>          getTags(void);
     bool                isTagUsed(const int tagid, const int imgid);        ///< Returns true if the given tag is used for the image
     void                setFilter(Filter fi);
-
+    void                addTag(int id, QString name);                       ///< Add a new tag (id = -1) or change existing one (id > 0)
+    void                deleteTag(int id);                                  ///< remove tag with given id from database
 private:
 
     QSqlDatabase    m_db;
