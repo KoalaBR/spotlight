@@ -17,11 +17,7 @@
 #include "imageitem.h"
 #include "tableitemdelegate.h"
 #include "managetags.h"
-
-#ifdef Q_OS_WIN
-    #include <Windows.h>
-    #include "shobjidl.h"
-#endif
+#include "windowsdesktopsupport.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -75,8 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
     initContextMenu();
 #ifdef Q_OS_LINUX
     m_desktop = new LinuxDesktopProvider();
-#endif
-#ifdef Q_OS_WIN
+#else
+    m_desktop = new WindowsDesktopSupport();
 #endif
 }
 
@@ -323,47 +319,7 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
     QString fname = createStoredImageFilename(img);
     if (action->text() == tr("Set as Background"))
     {
-#ifdef Q_OS_LINUX        
-/** how to find out, how many virtual desktops we habe
-    xprop -root $propname
-    where propname may be:
-         Name                    Type        e.g. output    description
-        _NET_NUMBER_OF_DESKTOPS CARDINAL  = 4       number of desktops
-        _NET_CURRENT_DESKTOP    CARDINAL  = 0       current desktop, starting from 0
-        _NET_DESKTOP_NAMES      UTF8_STRING = "Arbeitsfläche 1", "Arbeitsfläche 2", "Arbeitsfläche 3", "Arbeitsfläche 4"  // name of each desktop
-            fprintf(file, "qdbus ");
-            fprintf(file, "org.kde.plasmashell ");
-            fprintf(file, "/PlasmaShell ");
-            fprintf(file, "org.kde.PlasmaShell.evaluateScript ");
-            fprintf(file, "'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++)");
-            fprintf(file, "{d = allDesktops[i];d.wallpaperPlugin = \"org.kde.image\";");
-            fprintf(file, "d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");");
-            fprintf(file, "d.writeConfig(\"Image\", \"file://%s\")}'", fname.toStdString().c_str() );
-            fclose(file);
-*/
         m_desktop->setWallpaper(-1, fname);
-
-#else
-//        wchar_t path[500];
-        fname = fname.replace("/", "\\");
-//        qDebug() << fname;
-//        fname.toWCharArray(path);
-//        if (!SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*) path, SPIF_UPDATEINIFILE))
-//            qDebug() << "Not set";
-        HRESULT hr = CoInitialize(nullptr);
-        IDesktopWallpaper *pDesktopWallpaper = nullptr;
-        hr = CoCreateInstance(__uuidof(DesktopWallpaper), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pDesktopWallpaper));
-        if (FAILED(hr))
-        {
-            qDebug() << "error";
-        }
-        else
-        {
-            pDesktopWallpaper->SetWallpaper(nullptr, fname.toStdWString().c_str());
-        }
-#endif
-//        qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var allDesktops = desktops();print (allDesktops);for (i=0;i<allDesktops.length;i++) {d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");d.writeConfig("Image", "file://download/spotlight/landscape/landscape_SlangkopLeuchtturmKommetjie_Südafrika.jpg")}'
-
     }
     else
     if (action->text() == tr("Show"))

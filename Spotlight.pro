@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     tableitemdelegate.cpp \
     abstractdesktopsupport.cpp \
     linuxdesktopprovider.cpp \
-    managetags.cpp
+    managetags.cpp \
+    windowsdesktopsupport.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -50,7 +51,8 @@ HEADERS  += mainwindow.h \
     tableitemdelegate.h \
     abstractdesktopsupport.h \
     linuxdesktopprovider.h \
-    managetags.h
+    managetags.h \
+    windowsdesktopsupport.h
 
 FORMS    += mainwindow.ui \
     managetags.ui

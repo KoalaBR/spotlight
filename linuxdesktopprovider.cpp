@@ -85,6 +85,15 @@ void LinuxDesktopProvider::setWallpaper(int desktop, QString fname)
 
 void LinuxDesktopProvider::readEnvironment()
 {
+    /* how to find out, how many virtual desktops we have
+        xprop -root $propname
+        where propname may be:
+             Name                    Type        e.g. output    description
+            _NET_NUMBER_OF_DESKTOPS CARDINAL  = 4       number of desktops
+            _NET_CURRENT_DESKTOP    CARDINAL  = 0       current desktop, starting from 0
+            _NET_DESKTOP_NAMES      UTF8_STRING = "Arbeitsfläche 1", "Arbeitsfläche 2", "Arbeitsfläche 3", "Arbeitsfläche 4"  // name of each desktop
+    */
+
     QString result = getProperty("_NET_DESKTOP_NAMES");
     m_names = result.split(", ");
     for (int i = 0; i < m_names.size(); i++)
