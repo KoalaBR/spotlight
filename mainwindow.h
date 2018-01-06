@@ -37,6 +37,7 @@ public slots:
     void        slotManageTags(void);
     void        slotChangeBackgroundTimeout(void);
     void        slotFadeTimeout(void);
+    void        slotFindImage(void);                ///< Search for images by title
     void        slotDownloadComplete(QString    content);
     void        slotImageDownloadComplete(ImageItem item);
     void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);

@@ -20,7 +20,7 @@ void Database::setFilter(Filter fi)
     m_filter = fi;
 }
 
-void Database::addTag(int id, QString name)
+void Database::addTag(const int id, const QString name)
 {
     QSqlQuery query(m_db);
     if (id < 0)
@@ -46,7 +46,7 @@ void Database::addTag(int id, QString name)
     }
 }
 
-void Database::deleteTag(int id)
+void Database::deleteTag(const int id)
 {
     QString sql = "delete from tags where id=%1";
     sql = sql.arg(id);
@@ -61,6 +61,28 @@ void Database::deleteTag(int id)
     {
         qDebug() << "Error: Delete from tagimg failed";
     }
+}
+
+QList<Tag> Database::getTagsForImage(const ImageItem item)
+{
+    QList<Tag>  result;
+    QString sql = "select id, name from tags where id in (select tagid from tagimg where picid=%1)";
+    sql = sql.arg(item.id());
+    QSqlQuery query(m_db);
+    if (query.exec(sql))
+    {
+        while (query.next())
+        {
+            QString name = query.value("name").toString();
+            int     id   = query.value("id").toInt();
+            Tag tag;
+            tag.id  = id;
+            tag.tag = name;
+            result.push_back(tag);
+        }
+    }
+    else qDebug() << "Error:" << query.lastError().text();
+    return result;
 }
 
 bool Database::openDatabase(void)

@@ -21,7 +21,7 @@ public:
     Database();
     ~Database();
 
-    QList<ImageItem>    getImages(const Filter f);
+    QList<ImageItem>    getImages(const Filter f = Filter::FI_ALL);
     QList<ImageItem>    getImagesByTag(const Filter f, int tagid);
     void                addImage(ImageItem &item);
     void                deleteImage(ImageItem item);
@@ -32,8 +32,9 @@ public:
     QList<Tag>          getTags(void);
     bool                isTagUsed(const int tagid, const int imgid);        ///< Returns true if the given tag is used for the image
     void                setFilter(Filter fi);
-    void                addTag(int id, QString name);                       ///< Add a new tag (id = -1) or change existing one (id > 0)
-    void                deleteTag(int id);                                  ///< remove tag with given id from database
+    void                addTag(const int id, const QString name);           ///< Add a new tag (id = -1) or change existing one (id > 0)
+    void                deleteTag(const int id);                            ///< remove tag with given id from database
+    QList<Tag>          getTagsForImage(const ImageItem item);              ///< Which tags are assigned to a given image?
 private:
 
     QSqlDatabase    m_db;

@@ -18,6 +18,7 @@
 #include "tableitemdelegate.h"
 #include "managetags.h"
 #include "windowsdesktopsupport.h"
+#include "finddialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -69,6 +70,10 @@ MainWindow::MainWindow(QWidget *parent) :
     slotChangeBackgroundTimeout();
     QList<Tag> list = m_database.getTags();
     initContextMenu();
+    QAction *action = new QAction(this);
+    this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+    connect(action, SIGNAL(triggered()), this, SLOT(slotFindImage()));
 #ifdef Q_OS_LINUX
     m_desktop = new LinuxDesktopProvider();
 #else
@@ -167,6 +172,12 @@ void MainWindow::slotFadeTimeout()
         m_fadeTimer.stop();
         m_changeImgTimeout.start();
     }
+}
+
+void MainWindow::slotFindImage()
+{
+    FindDialog find(&m_database, this);
+    find.exec();
 }
 
 

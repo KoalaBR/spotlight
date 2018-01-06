@@ -6,5 +6,6 @@
         <file>icons/list-add.png</file>
         <file>icons/list-remove.png</file>
         <file>icons/application-certificate.png</file>
+        <file>icons/emblem-unreadable.png</file>
     </qresource>
 </RCC>

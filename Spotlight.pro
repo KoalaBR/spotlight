@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     abstractdesktopsupport.cpp \
     linuxdesktopprovider.cpp \
     managetags.cpp \
-    windowsdesktopsupport.cpp
+    windowsdesktopsupport.cpp \
+    finddialog.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -52,10 +53,12 @@ HEADERS  += mainwindow.h \
     abstractdesktopsupport.h \
     linuxdesktopprovider.h \
     managetags.h \
-    windowsdesktopsupport.h
+    windowsdesktopsupport.h \
+    finddialog.h
 
 FORMS    += mainwindow.ui \
-    managetags.ui
+    managetags.ui \
+    finddialog.ui
 # Only for Visual Studio 2016
 windows {
     *-g++* {
