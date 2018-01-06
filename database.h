@@ -27,7 +27,7 @@ public:
     void                deleteImage(ImageItem item);
     void                tagImage(bool checked, int tagid, int imgid);
     bool                canDownloadImage(ImageItem item);
-    bool                openDatabase(void);
+    bool                openDatabase(QString baseDir);
     ImageItem           getRandomImage(void);
     QList<Tag>          getTags(void);
     bool                isTagUsed(const int tagid, const int imgid);        ///< Returns true if the given tag is used for the image

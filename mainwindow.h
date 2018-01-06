@@ -82,6 +82,7 @@ private:
     QMenu               *m_contextMenu;
     QMenu               *m_tags;
     AbstractDesktopSupport  *m_desktop;
+    QString              m_baseDir;                     ///< Where do we store the pictures?
 };
 
 #endif // MAINWINDOW_H

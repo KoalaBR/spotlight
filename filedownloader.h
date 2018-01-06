@@ -17,8 +17,6 @@ public:
     void    downloadImage(const ImageItem item);
     void    downloadJSON(const QUrl &url);
 
-    QString saveFileName(const QUrl &url);
-
 public slots:
     void    downloadFinished(QNetworkReply *reply);
     void    sslErrors(const QList<QSslError> &errors);

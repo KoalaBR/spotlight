@@ -4,6 +4,7 @@
 #include <QBuffer>
 #include <QDebug>
 #include <QSqlError>
+#include <QDir>
 
 Database::Database()
 {
@@ -85,10 +86,10 @@ QList<Tag> Database::getTagsForImage(const ImageItem item)
     return result;
 }
 
-bool Database::openDatabase(void)
+bool Database::openDatabase(QString baseDir)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName("spotlight.db");
+    m_db.setDatabaseName(baseDir +"download" + QDir::separator() + "spotlight.db");
     if (!m_db.open())
     {
         qDebug() << "Fehler 1" << m_db.lastError().text();

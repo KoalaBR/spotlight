@@ -7,7 +7,7 @@
 #include <QPainterPath>
 #include <QSettings>
 #include <QGraphicsDropShadowEffect>
-#include <QProcess>
+#include <QStandardPaths>
 
 #include <time.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     createCacheDirs();
-    if (!m_database.openDatabase())
+    if (!m_database.openDatabase(m_baseDir))
         printLine(tr("Error: Could not open database"));
     m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
     m_addThread->start();
@@ -153,7 +153,7 @@ void MainWindow::slotChangeBackgroundTimeout(void)
         return;
     m_title = "";
     m_fade  = 0.0;
-    if (m_imgNew.load(item.filename()))
+    if (m_imgNew.load(m_baseDir + item.filename()))
     {
         m_changeImgTimeout.stop();
         m_fadeTimer.start();
@@ -228,7 +228,7 @@ void MainWindow::printLine(QString line)
 
 void MainWindow::saveSettings(void)
 {
-    QSettings   settings(C_MW_IniFile, QSettings::IniFormat);
+    QSettings   settings(m_baseDir +  "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
     settings.setValue("orientation", ui->cmbOrientation->currentIndex());
     settings.setValue("title",  ui->cmbTitle->currentIndex());
     settings.setValue("geometry", this->geometry());
@@ -237,7 +237,7 @@ void MainWindow::saveSettings(void)
 
 void MainWindow::loadSettings(void)
 {
-    QSettings   settings(C_MW_IniFile, QSettings::IniFormat);
+    QSettings   settings(m_baseDir + "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
     ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
     ui->cmbTitle->setCurrentIndex(settings.value("title", -1).toInt());
     QRect rect = settings.value("geometry").toRect();
@@ -269,21 +269,26 @@ QString MainWindow::createFirstRequest(void)
 
 void MainWindow::createCacheDirs(void)
 {
-    QString path = QString("download") + QDir::separator() + "spotlight";
+    m_baseDir = "";
+    if (QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).size() > 0)
+        m_baseDir = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).at(0);
+    if (!m_baseDir.endsWith(QDir::separator()))
+        m_baseDir += QDir::separator();
+    QString path = m_baseDir + QString("download") + QDir::separator() + "spotlight";
     QDir md = QDir();
     md.mkpath(path + QDir::separator() + "portrait");
     md.mkpath(path + QDir::separator() + "landscape");
-    path = QString("download") + QDir::separator() + "bing";
+    path = m_baseDir + QString("download") + QDir::separator() + "bing";
     md.mkpath(path + QDir::separator() + "landscape");
     md.mkpath(path + QDir::separator() + "portrait");
-    path = QString("download") + QDir::separator() + "chromecast";
+    path = m_baseDir + QString("download") + QDir::separator() + "chromecast";
     md.mkpath(path + QDir::separator() + "landscape");
     md.mkpath(path + QDir::separator() + "portrait");
 }
 
 void MainWindow::slotImageDownloadComplete(ImageItem item)
 {
-    QString filename = item.filename();
+    QString filename = m_baseDir + item.filename();
     item.image().save(filename);
     m_database.addImage(item);
     printLine("Runter geladen:" + item.title());
@@ -310,7 +315,7 @@ void MainWindow::slotDownloadsFinished(void)
  */
 QString MainWindow::createStoredImageFilename(ImageItem &img)
 {
-    QString fname = QDir::currentPath() + QDir::separator() + img.filename();
+    QString fname = m_baseDir + img.filename();
     return fname;
 }
 
