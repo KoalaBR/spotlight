@@ -1,2 +1,4 @@
 *.autosave
 /Spotlight.pro.user*
+docs/
+*.qm

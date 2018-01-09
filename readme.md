@@ -2,7 +2,7 @@
 
 This program downloads wallpapers from Spotlight (Windows 10), Chromecast and
 Bing according to the user's configuration. It will store the images in a
-directory named "download".
+directory named "download" in the default picture path. For Windows this would be something like `c:\Users\%Username%\Pictures` while under Linux this could be `~/Pictures`.
 
 You can select which orientation (landscape / portrait) the images should have
 in order to be considered for download.
@@ -31,10 +31,8 @@ Quite a bit currently works, but some things are still missing:
 
 * Change the title to your liking
 * try to reload an accidentally deleted image (if possible)
-* Data should not be stored in the program directory but in a directory the user chooses.
-  If nothing gets chosen, default to something sane.
 * Translation is missing.
-* Check for exif data
+* Check for exif data (it looks like neither Bing nor Chromecast nor Spotlight offers those)
 
 # Basics
 
@@ -53,7 +51,7 @@ only has the images available from today and 7 days back. Earlier images are no 
 # How to use
 
 As already noted above, the program currently stores the images in a directory called
-*download* which will be automatically created on program start. The program allows you 
+`download` which will be automatically created on program start. The program allows you 
 to choose the orientation (portrait, landscape or both). 
 
 Additionally you can switch on or off titles and change the display mode. By default all
