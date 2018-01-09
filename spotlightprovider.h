@@ -13,6 +13,7 @@ public:
 private:
     QList<ImageItem> decodeJsonList(QString value);
     QList<ImageItem> getImageItem(QJsonObject image);
+    QString     m_locale;               ///< en-EN, de-DE, changes the language of the title
 };
 
 #endif // SPOTLIGHTPROVIDER_H

@@ -106,8 +106,6 @@ void MainWindow::initContextMenu(void)
 void MainWindow::clickedHideGUI(void)
 {
     ui->stackedWidget->setCurrentIndex(1);
-    ui->pgbProgress->hide();
-    ui->lblText->hide();
 }
 
 void MainWindow::clickedShowGUI(void)

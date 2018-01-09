@@ -8,15 +8,15 @@
 
 SpotlightProvider::SpotlightProvider(QPlainTextEdit *edit) : AbstractProvider(edit)
 {
-
+    m_locale = QObject::tr("de-DE");
 }
 
 QString SpotlightProvider::createFirstRequest(void)
 {
-    printLine("Spotlight: Frage nach Bilderliste...\n");
+    printLine(QObject::tr("Spotlight: Frage nach Bilderliste...") +"\n");
     QString url = "https://arc.msn.com/v3/Delivery/Cache?pid=209567&fmt=json&";
     url += "rafb=0&ua=WindowsShellClient%2F0&disphorzres=2560&dispvertres=1440";
-    url += "&lo=80217&pl=de-DE&lc=de-DE&ctry=de&time=";
+    url += "&lo=80217&pl="+m_locale+ "&lc=" + m_locale + "&ctry=de&time=";
     QDateTime time = QDateTime::currentDateTime();
     url += time.toString("yyyyMMdd")+"T" + time.toString("hhmmss") + "Z";
     // url += "2016"+time.toString("MMdd")+"T" + time.toString("hhmmss") + "Z";
@@ -51,7 +51,7 @@ QList<ImageItem> SpotlightProvider::getItemList(QByteArray data)
 
 QList<ImageItem> SpotlightProvider::decodeJsonList(QString value)
 {
-    printLine("Durchsuche Bilderliste...\n");
+    printLine(QObject::tr("Durchsuche Bilderliste...") +"\n");
     QJsonParseError jsErr;
     QJsonDocument doc(QJsonDocument::fromJson(value.toUtf8(), &jsErr));
     QJsonObject  item = doc.object();
@@ -82,7 +82,7 @@ QList<ImageItem> SpotlightProvider::getImageItem(QJsonObject image)
     QJsonObject jsImageL = image["image_fullscreen_001_landscape"].toObject();
     if (!jsImageL.isEmpty())
     {
-        printLine("Querformat: "+title);
+        printLine(QObject::tr("Querformat: ")+title);
         QString val = jsImageL["w"].toString();
         int  width  = val.toInt();
         val = jsImageL["h"].toString();
@@ -95,7 +95,7 @@ QList<ImageItem> SpotlightProvider::getImageItem(QJsonObject image)
     }
     if (!jsImageP.isEmpty())
     {
-        printLine("Hochformat: "+title);
+        printLine(QObject::tr("Hochformat: ")+title);
         QString val = jsImageP["w"].toString();
         int  width  = val.toInt();
         val = jsImageP["h"].toString();

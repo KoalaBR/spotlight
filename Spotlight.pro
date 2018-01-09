@@ -59,6 +59,9 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     managetags.ui \
     finddialog.ui
+
+TRANSLATIONS = spotlight_de.ts \
+               spotlight_en.ts
 # Only for Visual Studio 2016
 windows {
     *-g++* {
@@ -74,3 +77,11 @@ windows {
 
 RESOURCES += \
     resources.qrc
+
+copydatade.commands = lrelease $$PWD/spotlight_de.ts -qm $$OUT_PWD/spotlight_de.qm
+copydataen.commands = lrelease $$PWD/spotlight_en.ts -qm $$OUT_PWD/spotlight_en.qm
+first.depends = $(first) copydatade copydataen
+export(first.depends)
+export(copydatade.commands)
+export(copydataen.commands)
+QMAKE_EXTRA_TARGETS += first copydataen copydatade
