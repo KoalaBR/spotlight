@@ -31,7 +31,6 @@ Quite a bit currently works, but some things are still missing:
 
 * Change the title to your liking
 * try to reload an accidentally deleted image (if possible)
-* Translation is missing.
 * Check for exif data (it looks like neither Bing nor Chromecast nor Spotlight offers those)
 
 # Basics
@@ -82,3 +81,8 @@ The thumbnail table offers a context menu if you right click on images. It allow
 * Tag an image. You can use more than one tag on an image.
 * Show: shows the selected image in the program
 * Set title: Allows to set a title for images (Not yet implemented)
+
+
+# Translations
+
+English and german are supported translations. Depending on the system locale either german (locale starts with "de_") or english (anything else) will be setup.
