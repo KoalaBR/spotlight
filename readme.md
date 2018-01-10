@@ -86,3 +86,5 @@ The thumbnail table offers a context menu if you right click on images. It allow
 # Translations
 
 English and german are supported translations. Depending on the system locale either german (locale starts with "de_") or english (anything else) will be setup.
+
+QLocale::system() is used to identify the locale. This routine seems to look for either `LC_MESSAGES` or `LANG` to setup the locale.
