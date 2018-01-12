@@ -10,6 +10,59 @@
     </message>
 </context>
 <context>
+    <name>DialogRename</name>
+    <message>
+        <location filename="dialogrename.ui" line="14"/>
+        <source>Dialog</source>
+        <translation>Neuen Titel festlegen</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="20"/>
+        <source>Rename to:</source>
+        <translation>Neuer Titel:</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="32"/>
+        <source>Look online for a title</source>
+        <translation>Suche im Netz nach einem Titel</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="38"/>
+        <source>...</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="75"/>
+        <source>Rename</source>
+        <translation>Umbenennen</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="82"/>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="79"/>
+        <source>Rename failed (Undo)</source>
+        <translation>Unbenennung fehlgeschlagen (undo)</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="80"/>
+        <source>Database update failed but couldn&apos;t rename file back!?</source>
+        <translation>Datenbank konnte nicht aktualisiert werden. Aber auch die Rücknahme der Umbenennung scheiterte!?</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="88"/>
+        <source>Rename failed</source>
+        <translation>Umbennung fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="89"/>
+        <source>Rename failed. System says:</source>
+        <translation>Umbenennung der Bilddatei fehlgeschlagen. Grund: </translation>
+    </message>
+</context>
+<context>
     <name>FindDialog</name>
     <message>
         <location filename="finddialog.ui" line="14"/>
@@ -125,50 +178,56 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="30"/>
+        <location filename="mainwindow.cpp" line="31"/>
         <source>Error: Could not open database</source>
         <translation>Fehler: Öffnen der Datenbank fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="97"/>
-        <location filename="mainwindow.cpp" line="334"/>
+        <location filename="mainwindow.cpp" line="98"/>
+        <location filename="mainwindow.cpp" line="336"/>
         <source>Set as Background</source>
         <translation>Als Desktop-Hintergrund</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="98"/>
-        <location filename="mainwindow.cpp" line="354"/>
+        <location filename="mainwindow.cpp" line="99"/>
+        <location filename="mainwindow.cpp" line="356"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="99"/>
+        <location filename="mainwindow.cpp" line="100"/>
         <source>reload</source>
         <translation>Nochmal laden</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="100"/>
+        <location filename="mainwindow.cpp" line="101"/>
         <source>Tag Image</source>
         <translation>Etikett anbringen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="103"/>
-        <location filename="mainwindow.cpp" line="339"/>
+        <location filename="mainwindow.cpp" line="104"/>
+        <location filename="mainwindow.cpp" line="341"/>
         <source>Show</source>
         <translation>Zeige</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="203"/>
+        <location filename="mainwindow.cpp" line="105"/>
+        <location filename="mainwindow.cpp" line="368"/>
+        <source>Set title</source>
+        <translation>Neuen Titel festlegen</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="205"/>
         <source>Downloading portrait image</source>
         <translation>Lade hochformatiges Bild</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="218"/>
+        <location filename="mainwindow.cpp" line="220"/>
         <source>Done</source>
         <translation>Fertig</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="363"/>
+        <location filename="mainwindow.cpp" line="365"/>
         <source>Konnte Bild nicht löschen</source>
         <translation></translation>
     </message>

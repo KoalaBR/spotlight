@@ -86,6 +86,16 @@ QList<Tag> Database::getTagsForImage(const ImageItem item)
     return result;
 }
 
+bool Database::setNewTitle(const ImageItem item, QString title)
+{
+    QSqlQuery query(m_db);
+    QString sql = "Update picdata set title=:1 where id=:2";
+    query.prepare(sql);
+    query.bindValue(":1", title);
+    query.bindValue(":2", item.id());
+    return query.exec();
+}
+
 bool Database::openDatabase(QString baseDir)
 {
     m_db = QSqlDatabase::addDatabase("QSQLITE");

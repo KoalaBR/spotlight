@@ -19,6 +19,7 @@
 #include "managetags.h"
 #include "windowsdesktopsupport.h"
 #include "finddialog.h"
+#include "dialogrename.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -101,6 +102,7 @@ void MainWindow::initContextMenu(void)
     m_contextMenu->addMenu(m_tags);
     addTags(m_tags);
     m_contextMenu->addAction(new QAction(tr("Show")));
+    m_contextMenu->addAction(new QAction(tr("Set title")));
 }
 
 void MainWindow::clickedHideGUI(void)
@@ -362,6 +364,11 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         }
         else printLine(tr("Konnte Bild nicht löschen"));
     }
+    else
+    if (action->text() == tr("Set title"))
+    {
+        renameImage(img);
+    }
 }
 
 void MainWindow::slotTagged(void)
@@ -466,6 +473,25 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     m_addThread->doInit(getCurrentFilter());
 
+}
+
+/**
+ * @brief MainWindow::renameImage
+ * Called from the context menu. Allows to set a new title for
+ * a given image
+ * @param item the image to be renamed
+ */
+void MainWindow::renameImage(ImageItem item)
+{
+    DialogRename rename(item, &m_database, m_baseDir, this);
+    if (rename.exec() == QDialog::Accepted)
+    {
+        // Ok, update the overview
+        ui->tbwOverview->setRowCount(0);
+        ui->tbwOverview->clearContents();
+        m_addThread->doClear();
+        m_addThread->doInit(getCurrentFilter());
+    }
 }
 
 void MainWindow::addTags(QMenu *tags)

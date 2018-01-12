@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     linuxdesktopprovider.cpp \
     managetags.cpp \
     windowsdesktopsupport.cpp \
-    finddialog.cpp
+    finddialog.cpp \
+    dialogrename.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -54,11 +55,13 @@ HEADERS  += mainwindow.h \
     linuxdesktopprovider.h \
     managetags.h \
     windowsdesktopsupport.h \
-    finddialog.h
+    finddialog.h \
+    dialogrename.h
 
 FORMS    += mainwindow.ui \
     managetags.ui \
-    finddialog.ui
+    finddialog.ui \
+    dialogrename.ui
 
 TRANSLATIONS = spotlight_de.ts \
                spotlight_en.ts

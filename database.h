@@ -35,6 +35,7 @@ public:
     void                addTag(const int id, const QString name);           ///< Add a new tag (id = -1) or change existing one (id > 0)
     void                deleteTag(const int id);                            ///< remove tag with given id from database
     QList<Tag>          getTagsForImage(const ImageItem item);              ///< Which tags are assigned to a given image?
+    bool                setNewTitle(const ImageItem item, QString title);   ///< update the title (e.g. for image which have no title). Returns true if update was successful
 private:
 
     QSqlDatabase    m_db;

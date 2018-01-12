@@ -10,6 +10,59 @@
     </message>
 </context>
 <context>
+    <name>DialogRename</name>
+    <message>
+        <location filename="dialogrename.ui" line="14"/>
+        <source>Dialog</source>
+        <translation>Set new title</translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="20"/>
+        <source>Rename to:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="32"/>
+        <source>Look online for a title</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="38"/>
+        <source>...</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="75"/>
+        <source>Rename</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.ui" line="82"/>
+        <source>Close</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="79"/>
+        <source>Rename failed (Undo)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="80"/>
+        <source>Database update failed but couldn&apos;t rename file back!?</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="88"/>
+        <source>Rename failed</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="dialogrename.cpp" line="89"/>
+        <source>Rename failed. System says:</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>FindDialog</name>
     <message>
         <location filename="finddialog.ui" line="14"/>
@@ -125,50 +178,56 @@
         <translation>Back</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="30"/>
+        <location filename="mainwindow.cpp" line="31"/>
         <source>Error: Could not open database</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="97"/>
-        <location filename="mainwindow.cpp" line="334"/>
+        <location filename="mainwindow.cpp" line="98"/>
+        <location filename="mainwindow.cpp" line="336"/>
         <source>Set as Background</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="98"/>
-        <location filename="mainwindow.cpp" line="354"/>
+        <location filename="mainwindow.cpp" line="99"/>
+        <location filename="mainwindow.cpp" line="356"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="99"/>
+        <location filename="mainwindow.cpp" line="100"/>
         <source>reload</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="100"/>
+        <location filename="mainwindow.cpp" line="101"/>
         <source>Tag Image</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="103"/>
-        <location filename="mainwindow.cpp" line="339"/>
+        <location filename="mainwindow.cpp" line="104"/>
+        <location filename="mainwindow.cpp" line="341"/>
         <source>Show</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="203"/>
+        <location filename="mainwindow.cpp" line="105"/>
+        <location filename="mainwindow.cpp" line="368"/>
+        <source>Set title</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="205"/>
         <source>Downloading portrait image</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="218"/>
+        <location filename="mainwindow.cpp" line="220"/>
         <source>Done</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="363"/>
+        <location filename="mainwindow.cpp" line="365"/>
         <source>Konnte Bild nicht löschen</source>
         <translation>Deletion failed</translation>
     </message>

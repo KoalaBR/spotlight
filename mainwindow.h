@@ -52,6 +52,7 @@ protected:
     void        closeEvent(QCloseEvent *event);
     void        resizeEvent(QResizeEvent* event);
 private:
+    void        renameImage(ImageItem item);    ///< Rename image
     void        addTags(QMenu *tags);           ///< Add all tags to the sub menu
     void        initProviders(void);
     QString     createFirstRequest(void);
@@ -79,7 +80,7 @@ private:
     SpotlightProvider   *m_provSpot;
     BingProvider        *m_provBing;
     ChromecastProvider  *m_provCast;
-    QMenu               *m_contextMenu;
+    QMenu               *m_contextMenu;                 ///< Contextmenu for images in overview
     QMenu               *m_tags;
     AbstractDesktopSupport  *m_desktop;
     QString              m_baseDir;                     ///< Where do we store the pictures?
