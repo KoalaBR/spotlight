@@ -80,11 +80,11 @@ The thumbnail table offers a context menu if you right click on images. It allow
   In case of Bing this may not be possible.  (This feature is not yet implemented)
 * Tag an image. You can use more than one tag on an image.
 * Show: shows the selected image in the program
-* Set title: Allows to set a title for images (Not yet implemented)
+* Set title: Allows to set a title for images
 
 
 # Translations
 
 English and german are supported translations. Depending on the system locale either german (locale starts with "de_") or english (anything else) will be setup.
 
-QLocale::system() is used to identify the locale. This routine seems to look for either `LC_MESSAGES` or `LANG` to setup the locale.
+QLocale::system() is used to identify the locale. This routine seems to look for either `LC_MESSAGES` or `LANG` to setup the locale (Linux).
