@@ -3,6 +3,7 @@
 
 #include "imageitem.h"
 #include "database.h"
+#include "reverseimagesearch.h"
 
 #include <QDialog>
 
@@ -21,7 +22,8 @@ public:
     QString         getNewTitle(void);
 public slots:
     void        slotTitleChanged(QString title);                    ///< Called once the text in the edit field changed
-    void        slotRenameClicked();                                ///< User requested rename
+    void        slotRenameClicked(void);                            ///< User requested rename
+    void        slotReverseSearch(void);                            ///< Start reverse image search (button clicked)
 private:
     bool        isTitleUsed(QString title);   ///< is there a filename collision with the requested title?
 
@@ -29,6 +31,7 @@ private:
     ImageItem       m_item;
     Database       *m_db;
     QString         m_baseDir;
+    ReverseImageSearch  m_reverseSearch;
 };
 
 #endif // DIALOGRENAME_H

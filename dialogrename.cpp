@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QDebug>
+#include <QPicture>
 
 #include "dialogrename.h"
 #include "ui_dialogrename.h"
@@ -14,8 +15,10 @@ DialogRename::DialogRename(const ImageItem item, Database *db, QString baseDir, 
     m_baseDir = baseDir;
     ui->setupUi(this);
     ui->leTitle->setText(item.title());
+    ui->lblImage->setPixmap(QPixmap::fromImage(m_item.image()));
     connect(ui->leTitle,  SIGNAL(textChanged(QString)), this, SLOT(slotTitleChanged(QString)));
     connect(ui->pbRename, SIGNAL(clicked(bool)),        this, SLOT(slotRenameClicked()));
+    connect(ui->tobSuggest, SIGNAL(clicked(bool)),      this, SLOT(slotReverseSearch()));
 }
 
 DialogRename::~DialogRename()
@@ -62,7 +65,6 @@ void DialogRename::slotRenameClicked(void)
     newItem.setTitle(title);
     QString newFilename = m_baseDir + newItem.filename();
     QString oldFilename = m_baseDir + m_item.filename();
-    qDebug() << oldFilename;
     QFile file(oldFilename);
     if (file.rename(newFilename))
     {
@@ -88,4 +90,14 @@ void DialogRename::slotRenameClicked(void)
         QMessageBox::critical(this, tr("Rename failed"),
                               tr("Rename failed. System says:") +"\n" + file.errorString(), QMessageBox::Ok);
     }
+}
+
+void DialogRename::slotReverseSearch()
+{
+    QString url   = m_reverseSearch.prepareImageSearch(m_item, m_baseDir);
+    qDebug().noquote() << "Reverse url:" << url;
+//    if (url.isEmpty())
+//        return;
+    m_reverseSearch.getResult("url");
+//    qDebug() << "guess" <<guess;
 }

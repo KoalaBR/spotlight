@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     managetags.cpp \
     windowsdesktopsupport.cpp \
     finddialog.cpp \
-    dialogrename.cpp
+    dialogrename.cpp \
+    reverseimagesearch.cpp
 
 HEADERS  += mainwindow.h \
     filedownloader.h \
@@ -56,7 +57,8 @@ HEADERS  += mainwindow.h \
     managetags.h \
     windowsdesktopsupport.h \
     finddialog.h \
-    dialogrename.h
+    dialogrename.h \
+    reverseimagesearch.h
 
 FORMS    += mainwindow.ui \
     managetags.ui \
@@ -76,6 +78,12 @@ windows {
         LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.16299.0/um/x64"
         LIBS += -lUser32 -lOle32
     }
+}
+linux
+{
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    LIBS += -lcurl
 }
 
 RESOURCES += \
