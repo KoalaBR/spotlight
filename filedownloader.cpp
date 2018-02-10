@@ -12,11 +12,14 @@ DownloadManager::DownloadManager()
 {
     connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
             SLOT(downloadFinished(QNetworkReply*)));
+	m_checked = false;
 }
 
 void DownloadManager::downloadJSON(const QUrl &url)
 {
-    QNetworkRequest request(url);
+	if (!checkSSLSupport())
+		return;
+	QNetworkRequest request(url);
     QNetworkReply *reply = m_manager.get(request);
 
 #ifndef QT_NO_SSL
@@ -27,6 +30,8 @@ void DownloadManager::downloadJSON(const QUrl &url)
 
 void DownloadManager::downloadImage(const ImageItem item)
 {
+	if (!checkSSLSupport())
+		return;
     QNetworkRequest request(item.url());
     QNetworkReply *reply = m_manager.get(request);
 
@@ -81,4 +86,25 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
     reply->deleteLater();
     if (m_currentDownloads.size() == 0)
         emit downloadsFinished();
+}
+
+bool DownloadManager::checkSSLSupport(void)
+{
+	if (m_checked)
+		return true;
+	m_checked = true;
+	if (QSslSocket::supportsSsl())
+	{
+		long version = QSslSocket::sslLibraryVersionNumber();
+		qDebug() << QSslSocket::sslLibraryVersionString()
+			<< QString::number(version, 16);
+		if (MINOPENSSLVERSIONNUMBER > version)
+		{
+			emit SSL_not_supported();
+			return false;
+		}
+		else return true;
+	}
+	emit SSL_not_supported();
+	return false;
 }

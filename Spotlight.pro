@@ -74,9 +74,28 @@ windows {
            }
     *-msvc* {
         # MSVC
-        INCLUDEPATH += "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
-        LIBS += -L"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.16299.0/um/x64"
-        LIBS += -lUser32 -lOle32
+        SDKVERSION = $$(UCRTVersion)
+        SDKBASEDIR = $$(UniversalCRTSdkDir)
+        isEmpty(SDKVERSION) {
+            error("Visual Studio environment not configured correctly! (1)")
+        }
+        isEmpty(SDKBASEDIR) {
+            error("Visual Studio environment not configured correctly! (2)")
+        }
+        INCLUDEPATH += "$$SDKBASEDIR\\include\\$$SDKVERSION\\ucrt"
+        LIBS += "-L$$SDKBASEDIR\\lib\\$$SDKVERSION\\um\\x64"
+        # Curl default path
+        exists("$$PWD/curl.config") {
+            CURLBASEDIR=$$cat($$PWD\\curl.config)
+            message("found curl.config using $$CURLBASEDIR")
+        }
+        !exists($$PWD/curl.config) {
+            CURLBASEDIR=c:/Projekte/curl/
+            message("curl.config is missing, defaulting to   $$CURLBASEDIR")
+        }
+        INCLUDEPATH += $$CURLBASEDIR/include
+        LIBS += -L$$CURLBASEDIR
+        LIBS += -lUser32 -lOle32 -lcurl
     }
 }
 linux

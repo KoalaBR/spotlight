@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QGraphicsDropShadowEffect>
 #include <QStandardPaths>
+#include <QMessageBox>
 
 #include <time.h>
 #include <stdlib.h>
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+	qRegisterMetaType<QVector<int> >("QVector<int>");
     ui->setupUi(this);
     createCacheDirs();
     if (!m_database.openDatabase(m_baseDir))
@@ -34,8 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_currProv = NULL;
     connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
     connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
-    connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
-    connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
+	connect(&m_downloader,  SIGNAL(SSL_not_supported()),		this, SLOT(slotSSLMissing()));
+	connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
+	connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
     connect(&m_fadeTimer,   SIGNAL(timeout()),                  this, SLOT(slotFadeTimeout()));
     connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
     connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
@@ -274,6 +277,8 @@ void MainWindow::createCacheDirs(void)
         m_baseDir = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).at(0);
     if (!m_baseDir.endsWith(QDir::separator()))
         m_baseDir += QDir::separator();
+	QString replace = QString("") + QDir::separator();
+	m_baseDir = m_baseDir.replace("/", replace);
     QString path = m_baseDir + QString("download") + QDir::separator() + "spotlight";
     QDir md = QDir();
     md.mkpath(path + QDir::separator() + "portrait");
@@ -431,6 +436,16 @@ void MainWindow::slotCellDoubleClicked(int row, int col)
         m_addThread->doShowTag(id);
     if (cmd == DisplayCommand::DIS_UP)
         m_addThread->doShowTopLevel();
+}
+
+void MainWindow::slotSSLMissing(void)
+{
+	QString msg = tr("Ohne SSL Funktionalität lassen sich keine Bilder laden.");
+	msg += "\n" + tr("Bitte stellen Sie sicher, dass sich diese DLLs im ");
+	msg += tr("Programmverzeichnis befinden:") + "\n";
+	msg += " * libeay32.dll\n";
+	msg += " * ssleay32.dll\n";
+	QMessageBox::critical(this, tr("SSL Unterstützung fehlt"), msg, QMessageBox::Ok);
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)

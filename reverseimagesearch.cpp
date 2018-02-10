@@ -5,10 +5,8 @@
 #include <QFile>
 #include <QDebug>
 
-#ifdef Q_OS_LINUX
     #include <curl/curl.h>
     #include <curl/easy.h>
-#endif
 
 ReverseImageSearch::ReverseImageSearch(QObject *parent) : QObject(parent)
 {
@@ -28,7 +26,7 @@ ReverseImageSearch::~ReverseImageSearch()
       -F "h1=en"  -F "bih=179" -F "biw=1600" -F "encoded_image=@/home/prog/Bilder/download/spotlight/landscape/landscape_CrystalRiver_Colorado.jpg" https://www.google.co.in/searchbyimage/upload
   */
 
-#ifdef Q_OS_LINUX
+#if 1
 
 QString G_response;
 

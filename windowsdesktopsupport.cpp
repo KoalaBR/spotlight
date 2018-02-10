@@ -18,11 +18,14 @@ void WindowsDesktopSupport::setWallpaper(const int desktop, QString filename)
     hr = CoCreateInstance(__uuidof(DesktopWallpaper), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pDesktopWallpaper));
     if (FAILED(hr))
     {
-        qDebug() << "error";
+		// If this fails, we may be on Windows 7 (DesktopWallpaper is available starting with Windows 8)
+		SystemParametersInfoA(SPI_SETDESKWALLPAPER, 1, (void*)filename.toStdString().c_str(), SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
     }
     else
     {
-        pDesktopWallpaper->SetWallpaper(nullptr, fname.toStdWString().c_str());
+		if (pDesktopWallpaper->SetWallpaper(nullptr, fname.toStdWString().c_str()) == S_OK)
+			qDebug() << "Setting OK";
+		else qDebug() << "Setting failed";
     }
 #endif
 }

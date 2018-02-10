@@ -47,6 +47,7 @@ public slots:
     void        slotDisplayChanged(int index);
     void        slotOrientationChanged(int index);
     void        slotCellDoubleClicked(int row, int col);
+	void		slotSSLMissing(void);				///< called from DownloadManager if SSL is not supported
 protected:
     void        paintEvent(QPaintEvent *event);
     void        closeEvent(QCloseEvent *event);
