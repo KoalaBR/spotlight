@@ -164,3 +164,10 @@ The thumbnail table offers a context menu if you right click on images. It allow
 English and german are supported translations. Depending on the system locale either german (locale starts with "de_") or english (anything else) will be setup.
 
 QLocale::system() is used to identify the locale. This routine seems to look for either `LC_MESSAGES` or `LANG` to setup the locale (Linux).
+
+# Additional licenses
+
+This program uses [curl](https://curl.haxx.se) which uses the [MIT License](https://curl.haxx.se/docs/copyright.html).
+
+This product includes software developed by the OpenSSL Project
+for use in the [OpenSSL Toolkit](http://www.openssl.org/). For the complete text of the license please see `LICENSE.openssl`.
