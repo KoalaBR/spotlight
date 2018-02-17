@@ -184,13 +184,13 @@
     </message>
     <message>
         <location filename="mainwindow.cpp" line="101"/>
-        <location filename="mainwindow.cpp" line="339"/>
+        <location filename="mainwindow.cpp" line="341"/>
         <source>Set as Background</source>
         <translation>Als Desktop-Hintergrund</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="102"/>
-        <location filename="mainwindow.cpp" line="359"/>
+        <location filename="mainwindow.cpp" line="361"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
@@ -206,15 +206,20 @@
     </message>
     <message>
         <location filename="mainwindow.cpp" line="107"/>
-        <location filename="mainwindow.cpp" line="344"/>
+        <location filename="mainwindow.cpp" line="346"/>
         <source>Show</source>
         <translation>Zeige</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="108"/>
-        <location filename="mainwindow.cpp" line="371"/>
+        <location filename="mainwindow.cpp" line="373"/>
         <source>Set title</source>
         <translation>Neuen Titel festlegen</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="195"/>
+        <source>Daten geladen - Ermittle URLs</source>
+        <translation>Daten geladen - Ermittle URLs</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="208"/>
@@ -222,32 +227,42 @@
         <translation>Lade hochformatiges Bild</translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="218"/>
+        <source>Download landscape image</source>
+        <translation>Bild im Querformat geladen</translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="223"/>
         <source>Done</source>
         <translation>Fertig</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="368"/>
+        <location filename="mainwindow.cpp" line="299"/>
+        <source>Runter geladen:</source>
+        <translation>Runter geladen:</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="370"/>
         <source>Konnte Bild nicht löschen</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="441"/>
+        <location filename="mainwindow.cpp" line="443"/>
         <source>Ohne SSL Funktionalität lassen sich keine Bilder laden.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="442"/>
+        <location filename="mainwindow.cpp" line="444"/>
         <source>Bitte stellen Sie sicher, dass sich diese DLLs im </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="443"/>
+        <location filename="mainwindow.cpp" line="445"/>
         <source>Programmverzeichnis befinden:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="446"/>
+        <location filename="mainwindow.cpp" line="448"/>
         <source>SSL Unterstützung fehlt</source>
         <translation></translation>
     </message>
@@ -327,6 +342,16 @@
         <location filename="spotlightprovider.cpp" line="98"/>
         <source>Hochformat: </source>
         <translation>Hochformat: </translation>
+    </message>
+    <message>
+        <location filename="bingprovider.cpp" line="15"/>
+        <source>Searching on bing</source>
+        <translation>Suche auf Bing</translation>
+    </message>
+    <message>
+        <location filename="chromecastprovider.cpp" line="18"/>
+        <source>Searching in chromecast</source>
+        <translation>Suche bei Chromecast</translation>
     </message>
 </context>
 </TS>

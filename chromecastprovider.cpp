@@ -15,7 +15,7 @@ ChromecastProvider::ChromecastProvider(QPlainTextEdit *edit) : AbstractProvider 
 
 QString ChromecastProvider::createFirstRequest()
 {
-    printLine("Searching in chromecast");
+    printLine(QObject::tr("Searching in chromecast"));
     return "https://clients3.google.com/cast/chromecast/home";
 }
 

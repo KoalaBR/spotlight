@@ -192,7 +192,7 @@ void MainWindow::slotFindImage()
  */
 void MainWindow::slotDownloadComplete(QString content)
 {
-    printLine("Daten geladen - Ermittle URLs");
+    printLine(tr("Daten geladen - Ermittle URLs"));
     QList<ImageItem> itemList = getItemList(content.toUtf8());
     qDebug() << "Anzahl:" << itemList.size();
     for (int i = 0; i < itemList.size(); i++)
@@ -215,7 +215,7 @@ void MainWindow::slotDownloadComplete(QString content)
 
             if (m_database.canDownloadImage(item))
             {
-                printLine("Download landscape image");
+                printLine(tr("Download landscape image"));
                 m_downloader.downloadImage(item);
             }
         }
@@ -296,7 +296,7 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
     QString filename = m_baseDir + item.filename();
     item.image().save(filename);
     m_database.addImage(item);
-    printLine("Runter geladen:" + item.title());
+    printLine(tr("Runter geladen:") + item.title());
     m_addThread->doAddImage(item, true);
 }
 
