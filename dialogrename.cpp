@@ -2,9 +2,13 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QPicture>
+#include <QWebEngineView>
+#include <QDesktopServices>
 
 #include "dialogrename.h"
 #include "ui_dialogrename.h"
+
+DialogRename *dlgRename = NULL;      ///< For Callback storeHTML()
 
 DialogRename::DialogRename(const ImageItem item, Database *db, QString baseDir, QWidget *parent) :
     QDialog(parent),
@@ -16,9 +20,11 @@ DialogRename::DialogRename(const ImageItem item, Database *db, QString baseDir, 
     ui->setupUi(this);
     ui->leTitle->setText(item.title());
     ui->lblImage->setPixmap(QPixmap::fromImage(m_item.image()));
-    connect(ui->leTitle,  SIGNAL(textChanged(QString)), this, SLOT(slotTitleChanged(QString)));
-    connect(ui->pbRename, SIGNAL(clicked(bool)),        this, SLOT(slotRenameClicked()));
-    connect(ui->tobSuggest, SIGNAL(clicked(bool)),      this, SLOT(slotReverseSearch()));
+    connect(ui->leTitle,    SIGNAL(textChanged(QString)), this, SLOT(slotTitleChanged(QString)));
+    connect(ui->pbRename,   SIGNAL(clicked(bool)),        this, SLOT(slotRenameClicked()));
+    connect(ui->tobSuggest, SIGNAL(clicked(bool)),        this, SLOT(slotReverseSearch()));
+    connect(&m_webView,     SIGNAL(loadFinished(bool)),   this, SLOT(slotReverseSearchFinished(bool)));
+    connect(ui->tobShowUrl, SIGNAL(clicked(bool)),        this, SLOT(slotShowUrl()));
 }
 
 DialogRename::~DialogRename()
@@ -92,12 +98,82 @@ void DialogRename::slotRenameClicked(void)
     }
 }
 
-void DialogRename::slotReverseSearch()
+void DialogRename::slotReverseSearch(void)
 {
+    ui->stwReverseSearch->setCurrentIndex(1);
     QString url   = m_reverseSearch.prepareImageSearch(m_item, m_baseDir);
     qDebug().noquote() << "Reverse url:" << url;
-//    if (url.isEmpty())
-//        return;
-    m_reverseSearch.getResult("url");
-//    qDebug() << "guess" <<guess;
+    if (url.isEmpty())
+        return;
+    m_webView.load(QUrl(url));
+}
+
+void storeHtml(QString html)
+{
+    qDebug().noquote() << html;
+    FILE *file = fopen("/tmp/test.html", "w");
+    if (file != NULL)
+    {
+        fprintf(file, html.toStdString().c_str());
+        fclose(file);
+    }
+    dlgRename->updateResult(html);
+}
+
+void DialogRename::slotReverseSearchFinished(bool ok)
+{
+    if (ok)
+    {
+        dlgRename = this;
+        ui->stwReverseSearch->setCurrentIndex(2);
+        m_webView.page()->toHtml(&storeHtml);
+//        m_reverseSearch.getResult("");
+
+    }
+    else ui->stwReverseSearch->setCurrentIndex(0);
+
+}
+
+void DialogRename::slotShowUrl()
+{
+    QDesktopServices::openUrl(m_webView.url());
+}
+
+void DialogRename::updateResult(QString html)
+{
+    QStringList result;
+    // Suggestion start with  <a class="_gUb" href="/search...">suggestion</a>
+    int pos = html.indexOf("<a class=\"_gUb\" href=");
+    if (pos >= 0)
+    {
+        QString suggestion = html.mid(pos);
+        pos = suggestion.indexOf(">");
+        if (pos >= 0)
+            suggestion = suggestion.mid(pos+1);
+        pos = suggestion.indexOf("</a");
+        if (pos >= 0)
+            suggestion = suggestion.left(pos);
+        result << suggestion;
+    }
+    // Other results <h3 class="r"><a href="http...." ...>suggestion</a>
+    pos = html.indexOf("<h3 class=\"r\"><a href=\"http");
+    if (pos >= 0)
+    {
+        do
+        {
+            QString suggestion = html.mid(pos+15);
+            html = suggestion;
+            pos = suggestion.indexOf(">");
+            if (pos >= 0)
+                suggestion = suggestion.mid(pos+1);
+            pos = suggestion.indexOf("</");
+            if (pos >= 0)
+                suggestion = suggestion.left(pos);
+            result << suggestion;
+            pos = html.indexOf("<h3 class=\"r\"><a href=\"http");
+        }
+        while (pos >= 0);
+    }
+    ui->cmbSuggestions->clear();
+    ui->cmbSuggestions->addItems(result);
 }

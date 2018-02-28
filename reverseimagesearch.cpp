@@ -4,6 +4,8 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QDebug>
+#include <QStandardPaths>
+#include <QDir>
 
     #include <curl/curl.h>
     #include <curl/easy.h>
@@ -42,6 +44,7 @@ QString ReverseImageSearch::prepareImageSearch(ImageItem item, QString baseDir)
     curl_mime *form = NULL;
     curl_mimepart *field = NULL;
     struct curl_slist *headerlist = NULL;
+    QString tmpFilename = copyImageToTemp(item, baseDir);
     static const char buf[] = "Expect:";
     CURLcode res;
     if (m_curl)
@@ -76,9 +79,8 @@ QString ReverseImageSearch::prepareImageSearch(ImageItem item, QString baseDir)
         /* Content-Disposition: form-data; name="encoded_image"; filename="image.jpg"*/
         field = curl_mime_addpart(form);
         curl_mime_name(field, "encoded_image");
-        QString filename = baseDir + item.filename();
 //        curl_mime_filedata(field, filename.toStdString().c_str());
-        curl_mime_filedata(field, "/tmp/image.jpg");
+        curl_mime_filedata(field, tmpFilename.toStdString().c_str());
 
 
         /* initialize custom header list */
@@ -198,8 +200,9 @@ void ReverseImageSearch::slotRequestFinished(QNetworkReply *reply)
 
 void ReverseImageSearch::slotFinishedGet()
 {
-    qDebug() << "Reply" << reply->request().url().toString();
-    qDebug().nospace().noquote() << reply->readAll();
+    QString html = reply->readAll();
+    int pos = html.indexOf("<a class=\"_gUb\" href=\"/");
+    html = html.mid(pos);
 }
 
 bool ReverseImageSearch::isRedirected(QNetworkReply *reply)
@@ -217,10 +220,24 @@ QString ReverseImageSearch::getRedirectUrl(QString html)
     int pos = html.toLower().indexOf("HREF=\"http", 0, Qt::CaseInsensitive);
     if (pos < 0)
         return "";
-    html = html.mid(pos+5);
+    html = html.mid(pos+6);
     pos = html.indexOf("\">");
     if (pos < 0)
         return "";
     html = html.left(pos);
     return html;
+}
+
+QString ReverseImageSearch::copyImageToTemp(ImageItem item, QString baseDir)
+{
+    QString dstName = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
+    if (!dstName.endsWith(QDir::separator()))
+        dstName += QDir::separator();
+    QString srcName = baseDir + item.filename();
+    dstName += "image.jpg";
+    QFile dst(dstName);
+    dst.remove();
+    QFile file(srcName);
+    file.copy(dstName);
+    return dstName;
 }

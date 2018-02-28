@@ -41,12 +41,13 @@ public slots:
 private:
     bool    isRedirected(QNetworkReply *reply);     ///< check whether we got a 302 moved answer
     QString getRedirectUrl(QString html);           ///< get the redirection url from the response
+    QString copyImageToTemp(ImageItem item, QString baseDir);
 
     CURL                    *m_curl;
     QNetworkAccessManager    m_manager;
     T_RIS_Memory             m_chunk;
     QNetworkReply *reply;
-};
+ };
 extern QString     G_response;
 
 #endif // REVERSEIMAGESEARCH_H
