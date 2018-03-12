@@ -2,6 +2,7 @@
 #define ABSTRACTDESKTOPSUPPORT_H
 
 #include <QList>
+#include <QRect>
 #include <QString>
 
 enum class DesktopEnvironment { DESK_KDE,       ///< KDE-Desktop

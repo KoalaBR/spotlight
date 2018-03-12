@@ -3,10 +3,12 @@
 
 #include "imageitem.h"
 #include "database.h"
-#include "reverseimagesearch.h"
+#ifdef REVERSE_IMAGE
+    #include "reverseimagesearch.h"
+    #include <QWebEngineView>
+#endif
 
 #include <QDialog>
-#include <QWebEngineView>
 
 namespace Ui {
 class DialogRename;
@@ -35,8 +37,10 @@ private:
     ImageItem       m_item;
     Database       *m_db;
     QString         m_baseDir;
+#ifdef REVERSE_IMAGE
     ReverseImageSearch  m_reverseSearch;
     QWebEngineView  m_webView;
+#endif
 };
 
 #endif // DIALOGRENAME_H

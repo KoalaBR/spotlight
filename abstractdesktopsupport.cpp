@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QList>
+#include <QUrl>
 #include <QString>
 #include <QDesktopWidget>
 #include <QDesktopServices>

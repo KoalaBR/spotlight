@@ -3,6 +3,8 @@
 #include <QProcessEnvironment>
 #include <QStringList>
 #include <QDebug>
+#include <QFile>
+#include <QFileDevice>
 
 LinuxDesktopProvider::LinuxDesktopProvider()
 {

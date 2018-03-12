@@ -2,7 +2,9 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QPicture>
-#include <QWebEngineView>
+#ifdef REVERSE_IMAGE
+    #include <QWebEngineView>
+#endif
 #include <QDesktopServices>
 
 #include "dialogrename.h"
@@ -23,7 +25,9 @@ DialogRename::DialogRename(const ImageItem item, Database *db, QString baseDir, 
     connect(ui->leTitle,    SIGNAL(textChanged(QString)), this, SLOT(slotTitleChanged(QString)));
     connect(ui->pbRename,   SIGNAL(clicked(bool)),        this, SLOT(slotRenameClicked()));
     connect(ui->tobSuggest, SIGNAL(clicked(bool)),        this, SLOT(slotReverseSearch()));
+#ifdef REVERSE_IMAGE
     connect(&m_webView,     SIGNAL(loadFinished(bool)),   this, SLOT(slotReverseSearchFinished(bool)));
+#endif
     connect(ui->tobShowUrl, SIGNAL(clicked(bool)),        this, SLOT(slotShowUrl()));
 }
 
@@ -100,28 +104,25 @@ void DialogRename::slotRenameClicked(void)
 
 void DialogRename::slotReverseSearch(void)
 {
+#ifdef REVERSE_IMAGE
     ui->stwReverseSearch->setCurrentIndex(1);
     QString url   = m_reverseSearch.prepareImageSearch(m_item, m_baseDir);
     qDebug().noquote() << "Reverse url:" << url;
     if (url.isEmpty())
         return;
     m_webView.load(QUrl(url));
+#endif
 }
 
 void storeHtml(QString html)
 {
-    qDebug().noquote() << html;
-    FILE *file = fopen("/tmp/test.html", "w");
-    if (file != NULL)
-    {
-        fprintf(file, html.toStdString().c_str());
-        fclose(file);
-    }
+//    qDebug().noquote() << html;
     dlgRename->updateResult(html);
 }
 
 void DialogRename::slotReverseSearchFinished(bool ok)
 {
+#ifdef REVERSE_IMAGE
     if (ok)
     {
         dlgRename = this;
@@ -131,12 +132,14 @@ void DialogRename::slotReverseSearchFinished(bool ok)
 
     }
     else ui->stwReverseSearch->setCurrentIndex(0);
-
+#endif
 }
 
 void DialogRename::slotShowUrl()
 {
+#ifdef REVERSE_IMAGE
     QDesktopServices::openUrl(m_webView.url());
+#endif
 }
 
 void DialogRename::updateResult(QString html)
