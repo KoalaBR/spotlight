@@ -19,6 +19,8 @@ public:
     virtual QList<QString>   getDesktopNames(void);       ///< Returns the name of the virtual desktops
     virtual void             setWallpaper(int desktop, QString filename);
     bool                     isDesktop(DesktopEnvironment desk);
+
+    static QRect                    getDesktopSize(void);        ///< Size of primary Desktop.
 protected:
     DesktopEnvironment      m_desktop;
 };

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QList>
 #include <QString>
+#include <QDesktopWidget>
 
 AbstractDesktopSupport::AbstractDesktopSupport()
 {
@@ -35,3 +36,10 @@ bool AbstractDesktopSupport::isDesktop(DesktopEnvironment desk)
         return true;
     else return false;
 }
+
+QRect AbstractDesktopSupport::getDesktopSize(void)
+{
+    QDesktopWidget widget;
+    return widget.availableGeometry(widget.primaryScreen()); // or screenGeometry(), depending on your needs
+}
+

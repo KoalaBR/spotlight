@@ -161,7 +161,15 @@ void MainWindow::slotChangeBackgroundTimeout(void)
         m_changeImgTimeout.stop();
         m_fadeTimer.start();
         m_title = item.title();
-        this->setFixedSize(m_imgNew.width(), m_imgNew.height());
+        int width  = m_imgNew.width();
+        int height = m_imgNew.height();
+        QRect size = AbstractDesktopSupport::getDesktopSize();
+        if ((width >  size.width()) || (height > size.height()))
+        {
+            width  = size.width();
+            height = size.height();
+        }
+        this->setFixedSize(width, height);
         this->centralWidget()->repaint();
     }
 }
@@ -451,15 +459,16 @@ void MainWindow::slotSSLMissing(void)
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter paint(this);
+    QSize size = this->size();
     if (!m_imgOld.isNull())
     {
         paint.setOpacity(1.0);
-        paint.drawImage(QPoint(0,0), m_imgOld);
+        paint.drawImage(QPoint(0,0), m_imgOld.scaledToWidth(size.width(), Qt::SmoothTransformation));
     }
     if (!m_imgNew.isNull())
     {
         paint.setOpacity(m_fade);
-        paint.drawImage(QPoint(0,0), m_imgNew);
+        paint.drawImage(QPoint(0,0), m_imgNew.scaledToWidth(size.width(), Qt::SmoothTransformation));
         if ((ui->cmbTitle->currentIndex() == 1) && (m_title.length() > 0))
         {
             QPainterPath path;
