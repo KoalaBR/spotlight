@@ -22,12 +22,13 @@
         <translation>Neuer Titel:</translation>
     </message>
     <message>
-        <location filename="dialogrename.ui" line="76"/>
+        <location filename="dialogrename.ui" line="93"/>
         <source>Look online for a title</source>
         <translation>Suche im Netz nach einem Titel</translation>
     </message>
     <message>
-        <location filename="dialogrename.ui" line="82"/>
+        <location filename="dialogrename.ui" line="99"/>
+        <location filename="dialogrename.ui" line="133"/>
         <source>...</source>
         <translation></translation>
     </message>
@@ -42,22 +43,22 @@
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="dialogrename.cpp" line="81"/>
+        <location filename="dialogrename.cpp" line="91"/>
         <source>Rename failed (Undo)</source>
         <translation>Unbenennung fehlgeschlagen (undo)</translation>
     </message>
     <message>
-        <location filename="dialogrename.cpp" line="82"/>
+        <location filename="dialogrename.cpp" line="92"/>
         <source>Database update failed but couldn&apos;t rename file back!?</source>
         <translation>Datenbank konnte nicht aktualisiert werden. Aber auch die Rücknahme der Umbenennung scheiterte!?</translation>
     </message>
     <message>
-        <location filename="dialogrename.cpp" line="90"/>
+        <location filename="dialogrename.cpp" line="100"/>
         <source>Rename failed</source>
         <translation>Umbennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="dialogrename.cpp" line="91"/>
+        <location filename="dialogrename.cpp" line="101"/>
         <source>Rename failed. System says:</source>
         <translation>Umbenennung der Bilddatei fehlgeschlagen. Grund: </translation>
     </message>
@@ -173,7 +174,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="247"/>
+        <location filename="mainwindow.ui" line="178"/>
+        <source>Verzeichnis</source>
+        <translation>Verzeichnis</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="254"/>
         <source>Zurück</source>
         <translation></translation>
     </message>
@@ -183,86 +189,86 @@
         <translation>Fehler: Öffnen der Datenbank fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="101"/>
-        <location filename="mainwindow.cpp" line="341"/>
+        <location filename="mainwindow.cpp" line="102"/>
+        <location filename="mainwindow.cpp" line="350"/>
         <source>Set as Background</source>
         <translation>Als Desktop-Hintergrund</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="102"/>
-        <location filename="mainwindow.cpp" line="361"/>
+        <location filename="mainwindow.cpp" line="103"/>
+        <location filename="mainwindow.cpp" line="370"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="103"/>
+        <location filename="mainwindow.cpp" line="104"/>
         <source>reload</source>
         <translation>Nochmal laden</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="104"/>
+        <location filename="mainwindow.cpp" line="105"/>
         <source>Tag Image</source>
         <translation>Etikett anbringen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="107"/>
-        <location filename="mainwindow.cpp" line="346"/>
+        <location filename="mainwindow.cpp" line="108"/>
+        <location filename="mainwindow.cpp" line="355"/>
         <source>Show</source>
         <translation>Zeige</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="108"/>
-        <location filename="mainwindow.cpp" line="373"/>
+        <location filename="mainwindow.cpp" line="109"/>
+        <location filename="mainwindow.cpp" line="382"/>
         <source>Set title</source>
         <translation>Neuen Titel festlegen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="195"/>
+        <location filename="mainwindow.cpp" line="204"/>
         <source>Daten geladen - Ermittle URLs</source>
         <translation>Daten geladen - Ermittle URLs</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="208"/>
+        <location filename="mainwindow.cpp" line="217"/>
         <source>Downloading portrait image</source>
         <translation>Lade hochformatiges Bild</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="218"/>
+        <location filename="mainwindow.cpp" line="227"/>
         <source>Download landscape image</source>
         <translation>Bild im Querformat geladen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="223"/>
+        <location filename="mainwindow.cpp" line="232"/>
         <source>Done</source>
         <translation>Fertig</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="299"/>
+        <location filename="mainwindow.cpp" line="308"/>
         <source>Runter geladen:</source>
         <translation>Runter geladen:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="370"/>
+        <location filename="mainwindow.cpp" line="379"/>
         <source>Konnte Bild nicht löschen</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="443"/>
+        <location filename="mainwindow.cpp" line="457"/>
         <source>Ohne SSL Funktionalität lassen sich keine Bilder laden.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="444"/>
+        <location filename="mainwindow.cpp" line="458"/>
         <source>Bitte stellen Sie sicher, dass sich diese DLLs im </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="445"/>
+        <location filename="mainwindow.cpp" line="459"/>
         <source>Programmverzeichnis befinden:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="448"/>
+        <location filename="mainwindow.cpp" line="462"/>
         <source>SSL Unterstützung fehlt</source>
         <translation></translation>
     </message>

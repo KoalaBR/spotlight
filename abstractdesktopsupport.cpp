@@ -4,6 +4,7 @@
 #include <QList>
 #include <QString>
 #include <QDesktopWidget>
+#include <QDesktopServices>
 
 AbstractDesktopSupport::AbstractDesktopSupport()
 {
@@ -41,5 +42,11 @@ QRect AbstractDesktopSupport::getDesktopSize(void)
 {
     QDesktopWidget widget;
     return widget.availableGeometry(widget.primaryScreen()); // or screenGeometry(), depending on your needs
+}
+
+void AbstractDesktopSupport::openFolder(QString path)
+{
+    QUrl url("file://" + path);
+    QDesktopServices::openUrl(url);
 }
 

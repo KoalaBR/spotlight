@@ -20,7 +20,8 @@ public:
     virtual void             setWallpaper(int desktop, QString filename);
     bool                     isDesktop(DesktopEnvironment desk);
 
-    static QRect                    getDesktopSize(void);        ///< Size of primary Desktop.
+    static QRect             getDesktopSize(void);        ///< Size of primary Desktop.
+    static void              openFolder(QString path);    ///< Opens folder with given path on desktop
 protected:
     DesktopEnvironment      m_desktop;
 };

@@ -46,6 +46,7 @@ public slots:
     void        slotTagged(void);
     void        slotDisplayChanged(int index);
     void        slotOrientationChanged(int index);
+    void        slotOpenFolder(void);               ///< Called if user wants to open desktop image folder
     void        slotCellDoubleClicked(int row, int col);
 	void		slotSSLMissing(void);				///< called from DownloadManager if SSL is not supported
 protected:

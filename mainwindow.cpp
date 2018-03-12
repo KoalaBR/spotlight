@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->cmbDisplay, SIGNAL(currentIndexChanged(int)),   this, SLOT(slotDisplayChanged(int)));
     connect(ui->tbwOverview,SIGNAL(cellDoubleClicked(int,int)), this, SLOT(slotCellDoubleClicked(int,int)));
     connect(ui->tbTags,     SIGNAL(clicked(bool)),              this, SLOT(slotManageTags()));
+    connect(ui->pbOpenFolder,SIGNAL(clicked()),                 this, SLOT(slotOpenFolder()));
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
     connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
@@ -250,7 +251,7 @@ void MainWindow::loadSettings(void)
 {
     QSettings   settings(m_baseDir + "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
     ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
-    ui->cmbTitle->setCurrentIndex(settings.value("title", -1).toInt());
+    ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
     QRect rect = settings.value("geometry").toRect();
     if (rect.isValid())
         this->setGeometry(rect);
@@ -428,6 +429,11 @@ void MainWindow::slotOrientationChanged(int index)
     ui->tbwOverview->clearContents();
     m_addThread->doInit(fi);
     slotChangeBackgroundTimeout();      // Change background
+}
+
+void MainWindow::slotOpenFolder()
+{
+    AbstractDesktopSupport::openFolder(m_baseDir + "download");
 }
 
 void MainWindow::slotCellDoubleClicked(int row, int col)
