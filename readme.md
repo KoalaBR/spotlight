@@ -21,78 +21,42 @@ If you are using Visual C++ as your compiler make sure that the LIBS paths in
 
 ### Getting it to run
 
-This chapter explains how to create a directory with all files 
-need for Spotlight in order to work. You only need to do this,
-if you have don't have those libraries installed on your target 
-system otherwise Spotlight should already work.
+First thing, check *Spotlight.pro* for additional paths and libraries. 
+Basically this means, to change LIBS and INCLUDEPATH variables
+for correct paths. On Windows with MS VC++ make sure that the SDK paths 
+are correct (look below the line "# Only for Visual Studio 2016").
 
-So just start Spotlight via clicking on the icon or command line - 
-No errors reported? Fine you should be done otherwise follow these
-additional steps:
+If you use Qt-Creator then the build process should be straight 
+forward now: Just load *Spotlight.pro*, configure your kit(s) and
+build.
 
-**1)** Create a program directory
-
-Lets call it `SpotlightDir` but you can name it as you like.
-
-**2)** Copy the program into this directory
-
-**3)** add required Qt libraries to `SpotlightDir`
-
-Spotlight need some libraries in order to work. I
-
-
-If your target system is missing those or has different versions 
-get them from your Qt installation dir you used for compilation, 
-e.g.:
-
-Linux `/opt/Qt/5.9.4/gcc_64/lib/`  (the libs will end with `.so`)
-
-`Qt5Core.so
-Qt5Gui.so
-Qt5Network.so
-Qt5Sql.so
-Qt5Widgets.so`
-
-Windows: `C:\Qt\5.9.4\msvc2017_64\bin` 
-
-For Windows you'll need the same libs, but those will end with `.dll`.
+If you want to build it via commandline, enter the source directory and do
+`qmake Spotlight.pro` followed by `make release`. You should find
+a `deploy` subdirectory including all files needed to start Spotlight.
 
 For https to work Qt needs `libeay32.dll` and ssleay32.dll`. 
 Linux distribution should provide those by installing openssl. Windows
-doesn't provide those you need to download them. 
+doesn't provide those - you need to download them. 
 
 Just download openssl 1.0.x (where x >= 1) and extract those files from
 the archive. You find a download list on the 
 [OpenSSL Wiki](https://wiki.openssl.org/index.php/Binaries)
 
-Finally you will need some sub directories for the required plugins 
-(*Note:* copy the directories not the directory's content!):
+### Add Reverse Image Search ###
 
-* `platforms`
-* `sqldrivers`
-* imageformats`
+Spotlight can use Google Reverse Image Search to find out about an
+image without title. This option needs both curl lib and include files
+installed on your system and adds a whole bunch of additional
+Qt libraries to the deploy dir. Because of that, I excluded the 
+feature by default.
 
-You can again find them in Qt installation dir, e.g.
+To enable it, open `Spotlight.pro` and uncomment the line
 
-`C:\Qt\5.9.4\msvc2017_64\plugins\`
+`# DEFINES += REVERSE_IMAGE` 
 
-If your copied sub directories contain `.pdb` files you can safely 
-remove them from `SpotlightDir\plugins\sqldrivers`
+at the start of the file. Now you can just follow the instructions
+from *Getting it to run*.
 
-**4)** Optionally remove libraries
-
-The program should now work but the sub directories will contain 
-superfluous files. E.g. we currently don't need a driver for MySQL
-or ODBC so we could safely remove them.
-
-Same for image formats: gif, tiff or tga.
-
-**5)** For Linux
-
-For Linux just copy spotlight.sh from your project directory to
-`SpotlightDir` and `chmod 755 SpotlightDir/spotlight.sh`. 
-
-The script just set `LD_PRELOAD` and starts the program.
 
 ## Icons
 
@@ -136,11 +100,12 @@ according to the tags you assigned.
 
 The button next to the display mode selection allows you to rename, delete or add tags as you wish. 
 
-Finally we have the button *search* and *Image*. Search will start a search for new images 
+Finally we have the buttons *Image Dir*, *search* and *Image*. Search will start a search for new images 
 (which may not be successful). As the program shows a downloaded image in the background
 every 10 seconds you may be interested in seeing the complete picture. In that case press
 *Image* to hide most of the GUI except for the *back* button which will show the GUI
 again.
+*Image Dir* opens the location in a file explorer where Spotlight stored the images.
 
 ## Context menu
 
