@@ -149,27 +149,29 @@ first.depends = $(first) copydatade copydataen deploy
 export(first.depends)
 export(copydatade.commands)
 export(copydataen.commands)
-win32:QMAKE_DEL_FILE = del /q
-win32:QMAKE_DEL_DIR  = rmdir /s /q
+windows:QMAKE_DEL_FILE = del /q
+windows:QMAKE_DEL_DIR  = rmdir /s /q
 linux:QMAKE_DEL_DIR  = rm -rf
+Release:DESTDIR=release
+Debug:DESTDIR=debug
 
-cleandeploy.commands = $$QMAKE_DEL_DIR "$$deploydir" ;
+# Clean first
 deploy.depends = cleandeploy
 #deploy.commands = /bin/echo "BIN=$$[QT_INSTALL_LIBS]"
-deploy.commands  = $$QMAKE_DEL_DIR "$$deploydir" ;
-deploy.commands += $$QMAKE_MKDIR "$$deploydir" ;
-deploy.commands += $$QMAKE_MKDIR "$$deploydir"/platforms ;
-deploy.commands += $$QMAKE_MKDIR "$$deploydir"/sqldrivers ;
-deploy.commands += $$QMAKE_MKDIR "$$deploydir"/imageformats ;
-deploy.commands += $$QMAKE_COPY_FILE $$OUT_PWD/spotlight_de.qm $$deploydir ;
-deploy.commands += $$QMAKE_COPY_FILE $$OUT_PWD/spotlight_en.qm $$deploydir ;
-deploy.commands += $$QMAKE_COPY_FILE $$TARGET $$deploydir ;
 # this commands for Linux
 linux {
     echo ="/usr/bin/echo"
     !exists($$echo) {
         echo = "/bin/echo"
     }
+    cleandeploy.commands = $$QMAKE_DEL_DIR \""$$deploydir"\" ;
+    deploy.commands += $$QMAKE_MKDIR "$$deploydir" ;
+    deploy.commands += $$QMAKE_MKDIR $$shell_path("$$deploydir"/platforms) ;
+    deploy.commands += $$QMAKE_MKDIR $$shell_path("$$deploydir"/sqldrivers) ;
+    deploy.commands += $$QMAKE_MKDIR $$shell_path("$$deploydir"/imageformats) ;
+    deploy.commands += $$QMAKE_COPY_FILE $$OUT_PWD/spotlight_de.qm $$deploydir ;
+    deploy.commands += $$QMAKE_COPY_FILE $$OUT_PWD/spotlight_en.qm $$deploydir ;
+    deploy.commands += $$QMAKE_COPY_FILE $$TARGET $$deploydir ;
     deploy.commands += $$echo \'$$LITERAL_HASH!/bin/bash\' > $$deploydir/link.sh ;
     deploy.commands += $$echo "cd $$deploydir" >> $$deploydir/link.sh ;
     deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/libQt5Widgets.so.$$[QT_VERSION] $$deploydir ;
@@ -210,30 +212,44 @@ linux {
         deploy.commands += $$echo "$$QMAKE_LN_SHLIB  libQt5PrintSupport.so.$$[QT_VERSION]     libQt5PrintSupport.so.$$QT_MAJOR_VERSION"  >> $$deploydir/link.sh ;
     }
     deploy.commands += $$deploydir/link.sh ;
+    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/sqldrivers/$$sqlplugin "$$deploydir"/sqldrivers ;
+    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/platforms/* "$$deploydir"/platforms ;
+    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/imageformats/$$imageplugin "$$deploydir"/imageformats ;
 }
 # and these for Windows
 windows {
-    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Widgets.so $$deploydir ;
-    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Core.so $$deploydir ;
-    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Sql.so $$deploydir ;
-    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Gui.so $$deploydir ;
-    deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Network.so $$deploydir ;
+contains(QT_ARCH, i386) {
+    message("32-bit")
+} else {
+    message("64-bit")
+}
+    deploydir=$$shell_path($$deploydir)
+    cleandeploy.commands = if exist $$deploydir $$QMAKE_DEL_DIR \""$$deploydir"\" &
+    deploy.commands += $$QMAKE_MKDIR $$shell_path("$$deploydir"/platforms) $$shell_path("$$deploydir"/sqldrivers) $$shell_path("$$deploydir"/imageformats) &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$OUT_PWD/spotlight_de.qm) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$OUT_PWD/spotlight_en.qm) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$OUT_PWD/$$DESTDIR/$$TARGET).exe $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Widgets.dll) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Core.dll) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Sql.dll) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Gui.dll) $$deploydir &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Network.dll) $$deploydir &
     # if we have Reverse Image search included, we need a bunch of libs more...
     contains(DEFINES, REVERSE_IMAGE) {
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5WebEngineWidgets.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5QuickWidgets.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Positioning.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Qml.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5WebChannel.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5Quick.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5WebEngineCore.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_LIBS]/Qt5PrintSupport.dll $$deploydir ;
-        deploy.commands += $$QMAKE_COPY_FILE $$CURLBASEDIR/libcurl.so $$deploydir ;
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5WebEngineWidgets.dll)  $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5QuickWidgets.dll)      $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Positioning.dll)       $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Qml.dll $$deploydir)   $$deplaydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5WebChannel.dll)        $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5Quick.dll)             $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5WebEngineCore.dll)     $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_BINS]/Qt5PrintSupport.dll)      $$deploydir &
+        deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$CURLBASEDIR/curl.dll)                     $$deploydir &
     }
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite.dll)    $$shell_path("$$deploydir"/sqldrivers) &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_PLUGINS]/platforms/*.dll)        $$shell_path("$$deploydir"/platforms) &
+    deploy.commands += $$QMAKE_COPY_FILE $$shell_path($$[QT_INSTALL_PLUGINS]/imageformats/qjpeg.dll) $$shell_path("$$deploydir"/imageformats) &
 }
-deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/sqldrivers/$$sqlplugin "$$deploydir"/sqldrivers ;
-deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/platforms/* "$$deploydir"/platforms ;
-deploy.commands += $$QMAKE_COPY_FILE $$[QT_INSTALL_PLUGINS]/imageformats/$$imageplugin "$$deploydir"/imageformats ;
 
 QMAKE_EXTRA_TARGETS += first copydataen copydatade cleandeploy deploy
 

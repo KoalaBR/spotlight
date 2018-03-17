@@ -12,7 +12,7 @@ Additionally you can select whether to show titles (if available) or not.
 
 ## Technical information
 
-This project was created with Qt-Creator (4.4.1) and Qt 5.9.2 on both Windows 10
+This project was created with Qt-Creator (4.4.1) and Qt 5.10.1 on both Windows 10
 and Linux (Devuan ascii/ceres). On Windows the Visual C++ compiler was used to
 create a 64 bit based binary. However, it should work fine with Mingw too.
 
@@ -30,17 +30,35 @@ If you use Qt-Creator then the build process should be straight
 forward now: Just load *Spotlight.pro*, configure your kit(s) and
 build.
 
+#### Linux
+
 If you want to build it via commandline, enter the source directory and do
 `qmake Spotlight.pro` followed by `make release`. You should find
 a `deploy` subdirectory including all files needed to start Spotlight.
 
-For https to work Qt needs `libeay32.dll` and ssleay32.dll`. 
-Linux distribution should provide those by installing openssl. Windows
-doesn't provide those - you need to download them. 
+#### Windows
 
-Just download openssl 1.0.x (where x >= 1) and extract those files from
+For Windows use either the x86 or x64 Native tools command line prompt from your 
+Visual Studio install. Enter `qmake.exe Spotlight.pro` followed by 
+`jom.exe release` to create a deploy directory which contains all files you need
+to start Spotlight.exe.
+
+
+For https to work on Windows, Qt needs `libeay32.dll` and `ssleay32.dll`. 
+Windows doesn't provide those - you need to download them. 
+
+Additionally you will need `libcrypto-1_1-x64.dll` and `libssl-1_1-x64.dll`.
+You can get those too from the latest Full Installer for OpenSSL.
+
+
+
+Just download openssl 1.1.x and extract those files from
 the archive. You find a download list on the 
-[OpenSSL Wiki](https://wiki.openssl.org/index.php/Binaries)
+[OpenSSL Wiki](https://wiki.openssl.org/index.php/Binaries). Depeding on 
+your target architecture you need either the 32 or 64 Bit version.
+
+For Linux, your distribution should provide those - if not install openssl.
+
 
 ### Add Reverse Image Search ###
 
@@ -57,6 +75,12 @@ To enable it, open `Spotlight.pro` and uncomment the line
 at the start of the file. Now you can just follow the instructions
 from *Getting it to run*.
 
+If you compile reverse image search on Windows the build process will
+look for curl in `c:\projekte\curl\curl.dll` and 
+`c:\projekte\curl\include` .
+
+If you want another base directory, add a file `curl.config` and
+enter the directory path.
 
 ## Icons
 
