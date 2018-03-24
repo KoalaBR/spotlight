@@ -336,6 +336,7 @@ void Database::deleteImage(ImageItem item)
     if (item.source() == Source::SRC_BING)
     {
         sql += QString("id = %1").arg(item.id());
+        query.prepare(sql);
         // Can't use the url, need to rely on days
     }
     else
