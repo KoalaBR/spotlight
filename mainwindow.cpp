@@ -114,6 +114,20 @@ void MainWindow::setupConnections()
     connect(ui->cmbOrientation, SIGNAL(currentIndexChanged(int)), this, SLOT(slotOrientationChanged(int)));
 }
 
+void MainWindow::setWindowSize(const QImage &img)
+{
+    int width  = img.width();
+    int height = img.height();
+    QRect size = AbstractDesktopSupport::getDesktopSize();
+    if ((width >  size.width()) || (height > size.height()))
+    {
+        width  = size.width();
+        height = size.height();
+    }
+    this->setFixedSize(width, height);
+
+}
+
 void MainWindow::initContextMenu(void)
 {
     m_contextMenu = new QMenu(this);
@@ -184,15 +198,7 @@ void MainWindow::slotChangeBackgroundTimeout(void)
         m_changeImgTimeout.stop();
         m_fadeTimer.start();
         m_title = item.title();
-        int width  = m_imgNew.width();
-        int height = m_imgNew.height();
-        QRect size = AbstractDesktopSupport::getDesktopSize();
-        if ((width >  size.width()) || (height > size.height()))
-        {
-            width  = size.width();
-            height = size.height();
-        }
-        this->setFixedSize(width, height);
+        setWindowSize(m_imgNew);
         this->centralWidget()->repaint();
     }
 }
@@ -308,7 +314,7 @@ void MainWindow::createCacheDirs(void)
         m_baseDir = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).at(0);
     if (!m_baseDir.endsWith(QDir::separator()))
         m_baseDir += QDir::separator();
-	QString replace = QString("") + QDir::separator();
+    QString replace = QString("") + QDir::separator();
 	m_baseDir = m_baseDir.replace("/", replace);
     QString path = m_baseDir + QString("download") + QDir::separator() + "spotlight";
     QDir md = QDir();
@@ -387,6 +393,7 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         if (m_imgNew.load(fname))
         {
             m_title = img.title();
+            setWindowSize(m_imgNew);
             this->setFixedSize(m_imgNew.width(), m_imgNew.height());
             this->centralWidget()->repaint();
             clickedHideGUI();
@@ -596,7 +603,12 @@ void MainWindow::initKeyboardShortcuts()
     connect(action, SIGNAL(triggered()), this, SLOT(clickedHideGUI()));
     action = new QAction(this);
     this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S));
+    connect(action, SIGNAL(triggered()), this, SLOT(clickedHideGUI()));
+    action = new QAction(this);
+    this->addAction(action);
     action->setShortcut(QKeySequence(Qt::Key_Escape));
     connect(action, SIGNAL(triggered()), this, SLOT(clickedShowGUI()));
 
 }
+

@@ -33,7 +33,7 @@ public:
 public slots:
     void        clickedHideGUI(void);               ///< Hides most of the GUI just to show the image in the background
     void        clickedSearch(void);                ///< Start searching for new pictures
-    void        clickedShowGUI(void);               ///< show Widgets again
+    void        clickedShowGUI();                   ///< show Widgets again
     void        slotManageTags(void);
     void        slotChangeBackgroundTimeout(void);
     void        slotFadeTimeout(void);
@@ -77,7 +77,7 @@ private:
     void        renameImage(ImageItem item);    ///< Rename image
     void        saveSettings(void);
     void        setupConnections();             ///< all needed connects here
-
+    void        setWindowSize(const QImage &img);
     QList<ImageItem> getItemList(QByteArray data);
     QList<ImageItem> getImageItem(QJsonObject image);
     void             createCacheDirs(void);
@@ -103,5 +103,6 @@ private:
     AbstractDesktopSupport  *m_desktop;
     QString              m_baseDir;                     ///< Where do we store the pictures?
 };
+
 
 #endif // MAINWINDOW_H
