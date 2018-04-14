@@ -10,8 +10,8 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 
-#include <time.h>
-#include <stdlib.h>
+#include <ctime>
+#include <cstdlib>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -26,34 +26,18 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-	qRegisterMetaType<QVector<int> >("QVector<int>");
+    registerMetatypes();
     ui->setupUi(this);
     createCacheDirs();
     if (!m_database.openDatabase(m_baseDir))
         printLine(tr("Error: Could not open database"));
     m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
     m_addThread->start();
-    m_currProv = NULL;
-    connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
-    connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
-	connect(&m_downloader,  SIGNAL(SSL_not_supported()),		this, SLOT(slotSSLMissing()));
-	connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
-	connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
-    connect(&m_fadeTimer,   SIGNAL(timeout()),                  this, SLOT(slotFadeTimeout()));
-    connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
-    connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
-    connect(ui->cmbDisplay, SIGNAL(currentIndexChanged(int)),   this, SLOT(slotDisplayChanged(int)));
-    connect(ui->tbwOverview,SIGNAL(cellDoubleClicked(int,int)), this, SLOT(slotCellDoubleClicked(int,int)));
-    connect(ui->tbTags,     SIGNAL(clicked(bool)),              this, SLOT(slotManageTags()));
-    connect(ui->pbOpenFolder,SIGNAL(clicked()),                 this, SLOT(slotOpenFolder()));
-    connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
-                this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
-    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
-                this, SLOT(slotContextMenuRequested(const QPoint)));
-    connect(ui->cmbOrientation, SIGNAL(currentIndexChanged(int)), this, SLOT(slotOrientationChanged(int)));
+    m_currProv = nullptr;
+    setupConnections();
     m_changeImgTimeout.start(C_MW_TimeOut);
     m_fadeTimer.setInterval(70);
-    srand(static_cast<unsigned int>(time(NULL)));
+    srand(static_cast<unsigned int>(time(nullptr)));
     QGraphicsDropShadowEffect *labelTextShadowEffect = new QGraphicsDropShadowEffect(this);
     labelTextShadowEffect->setColor(QColor("#BBBBBB"));
     labelTextShadowEffect->setBlurRadius(0.4);
@@ -73,12 +57,8 @@ MainWindow::MainWindow(QWidget *parent) :
     loadSettings();
     ui->tbwOverview->setItemDelegate(new TableItemDelegate());
     slotChangeBackgroundTimeout();
-    QList<Tag> list = m_database.getTags();
     initContextMenu();
-    QAction *action = new QAction(this);
-    this->addAction(action);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
-    connect(action, SIGNAL(triggered()), this, SLOT(slotFindImage()));
+    initKeyboardShortcuts();
 #ifdef Q_OS_LINUX
     m_desktop = new LinuxDesktopProvider();
 #else
@@ -92,8 +72,46 @@ MainWindow::~MainWindow()
     delete m_provSpot;
     delete m_provBing;
     delete m_provCast;
-    if (m_addThread != NULL)
+    if (m_addThread != nullptr)
         m_addThread->doShutdown();
+}
+
+void MainWindow::registerMetatypes()
+{
+    qRegisterMetaType<QVector<int> >("QVector<int>");
+    qRegisterMetaType<ImageItem >("ImageItem");
+    qRegisterMetaType<Filter>("Filter");
+}
+
+void MainWindow::setupConnections()
+{
+    connect(this, SIGNAL(signalDoAddImage(ImageItem,bool)), m_addThread, SLOT(doAddImage(ImageItem,bool)));
+    connect(this, SIGNAL(signalDoAddNextImage()),           m_addThread, SLOT(doAddNextImage()));
+    connect(this, SIGNAL(signalDoClear()),                  m_addThread, SLOT(doClear()));
+    connect(this, SIGNAL(signalDoInit(Filter)),             m_addThread, SLOT(doInit(Filter)));
+    connect(this, SIGNAL(signalDoShowAsFlat(bool)),         m_addThread, SLOT(doShowAsFlat(bool)));
+    connect(this, SIGNAL(signalDoShowTag(int)),             m_addThread, SLOT(doShowTag(int)));
+    connect(this, SIGNAL(signalDoShowTopLevel()),           m_addThread, SLOT(doShowTopLevel()));
+    connect(this, SIGNAL(signalDoShutdown()),               m_addThread, SLOT(doShutdown()));
+
+    connect(ui->pbSearch,   SIGNAL(clicked()),                  this, SLOT(clickedSearch()));
+    connect(&m_downloader,  SIGNAL(jsonDownloaded(QString)),    this, SLOT(slotDownloadComplete(QString)));
+    connect(&m_downloader,  SIGNAL(SSL_not_supported()),		this, SLOT(slotSSLMissing()));
+    connect(&m_downloader,  SIGNAL(imageDownloaded(ImageItem)), this, SLOT(slotImageDownloadComplete(ImageItem)));
+    connect(&m_changeImgTimeout, SIGNAL(timeout()),             this, SLOT(slotChangeBackgroundTimeout()));
+    connect(&m_fadeTimer,   SIGNAL(timeout()),                  this, SLOT(slotFadeTimeout()));
+    connect(ui->pbHide,     SIGNAL(clicked()),                  this, SLOT(clickedHideGUI()));
+    connect(ui->pbBack,     SIGNAL(clicked()),                  this, SLOT(clickedShowGUI()));
+    connect(ui->cmbDisplay, SIGNAL(currentIndexChanged(int)),   this, SLOT(slotDisplayChanged(int)));
+    connect(ui->tbwOverview,SIGNAL(cellDoubleClicked(int,int)), this, SLOT(slotCellDoubleClicked(int,int)));
+    connect(ui->tbTags,     SIGNAL(clicked(bool)),              this, SLOT(slotManageTags()));
+    connect(ui->pbOpenFolder,SIGNAL(clicked()),                 this, SLOT(slotOpenFolder()));
+    connect(m_addThread,    SIGNAL(signalAllImagesAdded()),     this, SLOT(slotAllImagesAdded()));
+    connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
+                this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
+    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
+                this, SLOT(slotContextMenuRequested(const QPoint)));
+    connect(ui->cmbOrientation, SIGNAL(currentIndexChanged(int)), this, SLOT(slotOrientationChanged(int)));
 }
 
 void MainWindow::initContextMenu(void)
@@ -114,7 +132,7 @@ void MainWindow::clickedHideGUI(void)
     ui->stackedWidget->setCurrentIndex(1);
 }
 
-void MainWindow::clickedShowGUI(void)
+void MainWindow::clickedShowGUI()
 {
     ui->stackedWidget->setCurrentIndex(0);
 }
@@ -130,6 +148,10 @@ void MainWindow::slotManageTags()
     slotDisplayChanged(ui->cmbDisplay->currentIndex());
 }
 
+/**
+ * @brief MainWindow::clickedSearch
+ * Start a new search for images
+ */
 void MainWindow::clickedSearch(void)
 {
     // make sure that chromecast respects what we are searching
@@ -309,14 +331,20 @@ void MainWindow::slotImageDownloadComplete(ImageItem item)
     m_addThread->doAddImage(item, true);
 }
 
+void MainWindow::slotAllImagesAdded()
+{
+    ui->tbwOverview->scrollToBottom();
+}
+
 void MainWindow::slotAddImage(QTableWidgetItem *item, int row, int col, int height)
 {
+//    qDebug() << "Index=" << item->data(C_AIT_Index).toInt() << item->toolTip();
     if (row+1 >= ui->tbwOverview->rowCount())
         ui->tbwOverview->setRowCount(row+1);
     ui->tbwOverview->setItem(row, col, item);
     ui->tbwOverview->setRowHeight(row, height+8);
     ui->tbwOverview->setColumnWidth(col, 160);
-    ui->tbwOverview->scrollToBottom();
+    m_addThread->doAddNextImage();
 }
 
 void MainWindow::slotDownloadsFinished(void)
@@ -336,7 +364,7 @@ QString MainWindow::createStoredImageFilename(ImageItem &img)
 void MainWindow::slotContextMenuRequested(const QPoint pos)
 {
     QTableWidgetItem *item = ui->tbwOverview->currentItem();
-    if (item == NULL)
+    if (item == nullptr)
         return;
     int index = item->data(Qt::UserRole +1).toInt();
     ImageItem img = m_addThread->getItem(index);
@@ -344,7 +372,7 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
         return;
     markTagSelection(m_tags, img);
     QAction *action = m_contextMenu->exec(ui->tbwOverview->viewport()->mapToGlobal(pos));
-    if (action == NULL)
+    if (action == nullptr)
         return;
     QString fname = createStoredImageFilename(img);
     if (action->text() == tr("Set as Background"))
@@ -387,11 +415,11 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
 
 void MainWindow::slotTagged(void)
 {
-    QAction *act    = static_cast<QAction*>(sender());
+    auto *act    = dynamic_cast<QAction*>(sender());
     int  tagid   = act->data().toInt();
     bool checked = act->isChecked();
     QTableWidgetItem *item = ui->tbwOverview->currentItem();
-    if (item == NULL)
+    if (item == nullptr)
         return;
     int index = item->data(Qt::UserRole +1).toInt();
     ImageItem img = m_addThread->getItem(index);
@@ -553,4 +581,22 @@ void MainWindow::initProviders(void)
     m_provSpot = new SpotlightProvider(ui->teShowActions);
     m_provBing = new BingProvider(ui->teShowActions);
     m_provCast = new ChromecastProvider(ui->teShowActions);
+}
+
+
+void MainWindow::initKeyboardShortcuts()
+{
+    auto *action = new QAction(this);
+    this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+    connect(action, SIGNAL(triggered()), this, SLOT(slotFindImage()));
+    action = new QAction(this);
+    this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_B));
+    connect(action, SIGNAL(triggered()), this, SLOT(clickedHideGUI()));
+    action = new QAction(this);
+    this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::Key_Escape));
+    connect(action, SIGNAL(triggered()), this, SLOT(clickedShowGUI()));
+
 }

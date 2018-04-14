@@ -28,7 +28,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 public slots:
     void        clickedHideGUI(void);               ///< Hides most of the GUI just to show the image in the background
@@ -40,6 +40,7 @@ public slots:
     void        slotFindImage(void);                ///< Search for images by title
     void        slotDownloadComplete(QString    content);
     void        slotImageDownloadComplete(ImageItem item);
+    void        slotAllImagesAdded(void);
     void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
     void        slotDownloadsFinished(void);
     void        slotContextMenuRequested(const QPoint pos);
@@ -49,19 +50,34 @@ public slots:
     void        slotOpenFolder(void);               ///< Called if user wants to open desktop image folder
     void        slotCellDoubleClicked(int row, int col);
 	void		slotSSLMissing(void);				///< called from DownloadManager if SSL is not supported
+signals:
+    void    signalDoAddImage(ImageItem item, bool newPic = false);
+    void    signalDoAddNextImage(void);
+    void    signalDoClear(void);
+    void    signalDoInit(Filter f);
+    void    signalDoShowTag(int id);
+    void    signalDoShowTopLevel(void);
+    void    signalDoShutdown(void);
+    void    signalDoShowAsFlat(bool flat);          ///< if true, just show the pics as they come in, otherwise show with tags as directory
+
+
 protected:
-    void        paintEvent(QPaintEvent *event);
-    void        closeEvent(QCloseEvent *event);
-    void        resizeEvent(QResizeEvent* event);
+    void        paintEvent(QPaintEvent *event) override;
+    void        closeEvent(QCloseEvent *event) override;
+    void        resizeEvent(QResizeEvent* event) override;
 private:
-    void        renameImage(ImageItem item);    ///< Rename image
     void        addTags(QMenu *tags);           ///< Add all tags to the sub menu
-    void        initProviders(void);
     QString     createFirstRequest(void);
-    void        printLine(QString line);        ///< Fügt eine Zeile am Anfang ein.
-    void        saveSettings(void);
-    void        loadSettings(void);
     void        initContextMenu(void);          ///< Create basic context menu for table
+    void        initKeyboardShortcuts();
+    void        initProviders(void);
+    void        loadSettings(void);
+    void        printLine(QString line);        ///< Fügt eine Zeile am Anfang ein.
+    void        registerMetatypes();
+    void        renameImage(ImageItem item);    ///< Rename image
+    void        saveSettings(void);
+    void        setupConnections();             ///< all needed connects here
+
     QList<ImageItem> getItemList(QByteArray data);
     QList<ImageItem> getImageItem(QJsonObject image);
     void             createCacheDirs(void);

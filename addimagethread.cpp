@@ -2,12 +2,12 @@
 
 #include <QDebug>
 
-AddImageThread::AddImageThread(Database *db, QTableWidget *over) : QThread(NULL)
+AddImageThread::AddImageThread(Database *db, QTableWidget *over) : QThread(nullptr)
 {
     m_db = db;
     m_id = 0;
     m_overview = over;
-    m_currCMD  = ThreadCommand::CMD_IDLE;
+    setCurrentCmd(ThreadCommand::CMD_IDLE);
     m_showFlat = true;
 }
 
@@ -16,23 +16,39 @@ void AddImageThread::doInit(Filter f)
     m_currFilter = f;
     int cols     = 4;
     m_overview->setColumnCount(cols);
-    m_currCMD    = ThreadCommand::CMD_INIT;
+    setCurrentCmd(ThreadCommand::CMD_INIT);
 }
 
 void AddImageThread::doShowTag(int id)
 {
     m_id = id;
-    m_currCMD = ThreadCommand::CMD_INIT;
+    setCurrentCmd(ThreadCommand::CMD_INIT);
+}
+
+void AddImageThread::doAddNextImage(void)
+{
+    if (m_nextImage < m_images.size())
+    {
+        setCurrentCmd(ThreadCommand::CMD_NEXT_IMAGE);
+
+    }
+    else
+    {
+        emit signalAllImagesAdded();
+    }
+
 }
 
 void AddImageThread::doClear(void)
 {
-    m_currCMD = ThreadCommand::CMD_CLEAR;
+    setCurrentCmd(ThreadCommand::CMD_CLEAR);
+
 }
 
 void AddImageThread::doShutdown(void)
 {
-    m_currCMD = ThreadCommand::CMD_SHUTDOWN;
+    setCurrentCmd(ThreadCommand::CMD_SHUTDOWN);
+
 }
 
 void AddImageThread::doShowAsFlat(bool flat)
@@ -44,7 +60,8 @@ void AddImageThread::doAddImage(ImageItem item, bool newPic)
 {
     m_currImage  = item;
     m_currNewPic = newPic;
-    m_currCMD    = ThreadCommand::CMD_ADDIMAGE;
+    m_nextImage++;
+    setCurrentCmd(ThreadCommand::CMD_ADDIMAGE);
 }
 
 void AddImageThread::initOverview(Filter f)
@@ -53,31 +70,39 @@ void AddImageThread::initOverview(Filter f)
     m_row = 0;
     m_height = 0;
     m_images.clear();
-    QList<ImageItem> images;
     // Flat display (just as a grid of images)?
     if (m_showFlat)
-        images = m_db->getImages(f);    // ok, get list of images currently stored in the db
+        m_images = m_db->getImages(f);    // ok, get list of images currently stored in the db
     else
     if (m_id > 0)
-        images = m_db->getImagesByTag(f, m_id);
+        m_images = m_db->getImagesByTag(f, m_id);
     // Quit if we don't have images for flat mode
-    if ((images.size() == 0) && m_showFlat)
+    if ((m_images.size() == 0) && m_showFlat)
         return;
     if (m_showFlat)
-        initOverviewFlat(images);
-    else showLevel(images, m_id);
+        initOverviewFlat();
+    else showLevel(m_id);
 }
 
-void AddImageThread::initOverviewFlat(QList<ImageItem> images)
+void AddImageThread::initOverviewFlat(void)
 {
-    for (int i = 0; i < images.size(); i++)
+    m_nextImage = 1;
+    if (m_images.size() > 0)
     {
-        ImageItem item = images[i];
+        ImageItem item = m_images[0];
         addImage(item);
-        if (m_currCMD == ThreadCommand::CMD_SHUTDOWN)
-            break;
     }
+}
 
+void AddImageThread::setCurrentCmd(ThreadCommand cmd)
+{
+    m_currCMD = cmd;
+}
+
+ThreadCommand AddImageThread::getCurrentCmd()
+{
+    ThreadCommand cmd = m_currCMD;
+    return cmd;
 }
 
 /**
@@ -87,7 +112,7 @@ void AddImageThread::initOverviewFlat(QList<ImageItem> images)
  * @param images
  * @param level  if 0 show tags as folders otherwise show images from list plus "up"
  */
-void AddImageThread::showLevel(QList<ImageItem> images, int level)
+void AddImageThread::showLevel(int level)
 {
     if (level == 0)
     {
@@ -101,24 +126,29 @@ void AddImageThread::showLevel(QList<ImageItem> images, int level)
             if (tags[i].id != 2)
                 addImage(item, false, DisplayCommand::DIS_TAG);
             else addImage(item, false, DisplayCommand::DIS_DEL);
-            if (m_currCMD == ThreadCommand::CMD_SHUTDOWN)
+            if (getCurrentCmd() == ThreadCommand::CMD_SHUTDOWN)
                 break;
         }
+        emit signalAllImagesAdded();
     }
     else
     {
         ImageItem item;
         item.setTitle(tr("Zurück"));
         addImage(item, false, DisplayCommand::DIS_UP);
-        initOverviewFlat(images);
+        initOverviewFlat();
     }
 }
 
 void AddImageThread::addImage(ImageItem item, bool newPic, DisplayCommand cmd)
 {
-    m_images.append(item);
     QTableWidgetItem *pic = createTableItem(item, cmd);
-    pic->setData(C_AIT_Index, m_images.size()-1);
+    if (newPic)
+    {
+        m_images.append(item);
+        pic->setData(C_AIT_Index, m_images.size()-1);
+    }
+    else pic->setData(C_AIT_Index, m_nextImage);
     if (newPic)
         pic->setBackgroundColor(Qt::green);
     if (item.isDeleted())
@@ -148,7 +178,7 @@ void AddImageThread::clearBackground()
         for (int c = 0; c < m_overview->columnCount(); c++)
         {
             QTableWidgetItem *item = m_overview->item(r, c);
-            if (item != NULL)
+            if (item != nullptr)
                 item->setBackgroundColor(Qt::white);
         }
     }
@@ -166,17 +196,18 @@ ImageItem AddImageThread::getItem(int index)
 void AddImageThread::doShowTopLevel(void)
 {
     m_id = 0;
-    m_currCMD = ThreadCommand::CMD_INIT;
+    setCurrentCmd(ThreadCommand::CMD_INIT);
 }
 
 void AddImageThread::run()
 {
     forever
     {
-        switch(m_currCMD)
+        ThreadCommand cmd = getCurrentCmd();
+        switch(cmd)
         {
             case ThreadCommand::CMD_IDLE:
-                 this->msleep(250);
+                 this->usleep(10);
                  break;
             case ThreadCommand::CMD_CLEAR:
                  this->clearBackground();
@@ -190,6 +221,14 @@ void AddImageThread::run()
                  break;
             case ThreadCommand::CMD_ADDIMAGE:
                  addImage(m_currImage, m_currNewPic);
+                 m_currCMD = ThreadCommand::CMD_IDLE;
+                 break;
+            case ThreadCommand::CMD_NEXT_IMAGE:
+                 if (m_nextImage < m_images.size())
+                 {
+                     addImage(m_images[m_nextImage], false);
+                     m_nextImage++;
+                 }
                  m_currCMD = ThreadCommand::CMD_IDLE;
                  break;
         }
