@@ -353,10 +353,6 @@ void MainWindow::slotAddImage(QTableWidgetItem *item, int row, int col, int heig
     m_addThread->doAddNextImage();
 }
 
-void MainWindow::slotDownloadsFinished(void)
-{
-}
-
 /*
     Create absolute path to image. This is needed to set the wallpaper
     in KDE.
@@ -604,7 +600,7 @@ void MainWindow::initKeyboardShortcuts()
     action = new QAction(this);
     this->addAction(action);
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S));
-    connect(action, SIGNAL(triggered()), this, SLOT(clickedHideGUI()));
+    connect(action, SIGNAL(triggered()), this, SLOT(clickedSearch()));
     action = new QAction(this);
     this->addAction(action);
     action->setShortcut(QKeySequence(Qt::Key_Escape));

@@ -42,7 +42,6 @@ public slots:
     void        slotImageDownloadComplete(ImageItem item);
     void        slotAllImagesAdded(void);
     void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
-    void        slotDownloadsFinished(void);
     void        slotContextMenuRequested(const QPoint pos);
     void        slotTagged(void);
     void        slotDisplayChanged(int index);
