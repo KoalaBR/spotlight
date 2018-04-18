@@ -128,6 +128,8 @@ every 10 seconds you may be interested in seeing the complete picture. In that c
 again. Either clicking *Back* or typing `ESCAPE` will bring back the default GUI.
 The button *Image Dir* or `ALT+D` opens the location in a file explorer where Spotlight stored the images. 
 
+If you want to search for images based on the image title pres `CTRL+F`.
+
 ## Context menu
 
 The thumbnail table offers a context menu if you right click on images. It allows you to

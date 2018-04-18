@@ -472,8 +472,12 @@ void MainWindow::slotCellDoubleClicked(int row, int col)
     if (ui->cmbDisplay->currentIndex() == 0)    // Flat display
         return;     // Nothing to do
     QTableWidgetItem *item = ui->tbwOverview->item(row, col);
+    if (item == nullptr)
+        return;
     int id = item->data(Qt::UserRole +3).toInt();
     DisplayCommand cmd = static_cast<DisplayCommand>(item->data(Qt::UserRole + 2).toInt());
+    if ((id == 0) && (cmd == DisplayCommand::DIS_PIC))
+       return;
     ui->tbwOverview->clear();
     ui->tbwOverview->setColumnCount(4);
     ui->tbwOverview->setRowCount(0);
