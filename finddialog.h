@@ -2,6 +2,7 @@
 #define FINDDIALOG_H
 
 #include <QDialog>
+#include <QTableWidgetItem>
 #include "database.h"
 
 namespace Ui {
@@ -13,12 +14,16 @@ class FindDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FindDialog(Database *db,QWidget *parent = 0);
+    explicit FindDialog(Database *db,QWidget *parent = nullptr);
     ~FindDialog();
 
+signals:
+    void signalShowImage(ImageItem img);
+
 private slots:
-    void on_pushButton_clicked(void);
-    void slotClear(void);
+    void slotShowImage(QTableWidgetItem *item);
+    void on_pushButton_clicked();
+    void slotClear();
     void slotSearch(QString text);
 
 private:
