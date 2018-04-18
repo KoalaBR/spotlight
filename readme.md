@@ -92,10 +92,7 @@ Both tango icons and wikimedia icon are in the public domain.
 
 Quite a bit currently works, but some things are still missing:
 
-* Enhance build system to create a directory which contains all files needed to run Spotlight
-* Use Reverse Image search to suggest titles for unnamed images.
 * try to reload an accidentally deleted image (if possible)
-* Check for exif data (it looks like neither Bing nor Chromecast nor Spotlight offers those)
 
 # Basics
 
@@ -124,12 +121,12 @@ according to the tags you assigned.
 
 The button next to the display mode selection allows you to rename, delete or add tags as you wish. 
 
-Finally we have the buttons *Image Dir*, *search* and *Image*. Search will start a search for new images 
+Finally we have the buttons *Image Dir*, *search* and *Image*. Search or `ALT+S` will start a search for new images 
 (which may not be successful). As the program shows a downloaded image in the background
 every 10 seconds you may be interested in seeing the complete picture. In that case press
-*Image* to hide most of the GUI except for the *back* button which will show the GUI
-again.
-*Image Dir* opens the location in a file explorer where Spotlight stored the images.
+*Image* or type `ALT+B` to hide most of the GUI except for the *back* button which will show the GUI
+again. Either clicking *Back* or typing `ESCAPE` will bring back the default GUI.
+The button *Image Dir* or `ALT+D` opens the location in a file explorer where Spotlight stored the images. 
 
 ## Context menu
 

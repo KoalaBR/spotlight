@@ -605,6 +605,9 @@ void MainWindow::initKeyboardShortcuts()
     this->addAction(action);
     action->setShortcut(QKeySequence(Qt::Key_Escape));
     connect(action, SIGNAL(triggered()), this, SLOT(clickedShowGUI()));
-
+    action = new QAction(this);
+    this->addAction(action);
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_D));
+    connect(action, SIGNAL(triggered()), this, SLOT(slotOpenFolder()));
 }
 
