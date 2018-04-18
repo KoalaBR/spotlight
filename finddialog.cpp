@@ -13,6 +13,7 @@ FindDialog::FindDialog(Database *db, QWidget *parent) :
     m_db = db;
     connect(ui->leSearch, SIGNAL(textChanged(QString)), this, SLOT(slotSearch(QString)));
     connect(ui->tbClear,  SIGNAL(clicked()),            this, SLOT(slotClear()));
+    connect(ui->tbwOverview, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(slotShowImage(QTableWidgetItem*)));
     m_list = m_db->getImages(Filter::FI_ALL);
 }
 
@@ -52,6 +53,7 @@ void FindDialog::slotSearch(QString text)
         QTableWidgetItem *item = new QTableWidgetItem();
         item->setData(Qt::ToolTipRole, title);
         item->setData(Qt::DecorationRole, img.image());
+        item->setData(Qt::UserRole +1, i);
         ui->tbwOverview->setItem(count, 0, item);
         QString tags = getTagList(img);
         item = new QTableWidgetItem();
@@ -63,6 +65,16 @@ void FindDialog::slotSearch(QString text)
         ui->tbwOverview->setItem(count, 2, item);
         ui->tbwOverview->setRowHeight(count, img.image().height() + 6);
         count++;
+    }
+}
+
+void FindDialog::slotShowImage(QTableWidgetItem *item)
+{
+    if (item->data(Qt::UserRole+1).isValid())
+    {
+        int index = item->data(Qt::UserRole +1).toInt();
+        emit signalShowImage(m_list[index]);
+        this->close();
     }
 }
 

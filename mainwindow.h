@@ -29,26 +29,27 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 public slots:
     void        clickedHideGUI(void);               ///< Hides most of the GUI just to show the image in the background
     void        clickedSearch(void);                ///< Start searching for new pictures
     void        clickedShowGUI();                   ///< show Widgets again
-    void        slotManageTags(void);
+    void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
+    void        slotAllImagesAdded(void);
+    void        slotCellDoubleClicked(int row, int col);
     void        slotChangeBackgroundTimeout(void);
+    void        slotContextMenuRequested(QPoint pos);
+    void        slotDisplayChanged(int index);
+    void        slotDownloadComplete(QString    content);
     void        slotFadeTimeout(void);
     void        slotFindImage(void);                ///< Search for images by title
-    void        slotDownloadComplete(QString    content);
     void        slotImageDownloadComplete(ImageItem item);
-    void        slotAllImagesAdded(void);
-    void        slotAddImage(QTableWidgetItem *item, int row, int col, int height);
-    void        slotContextMenuRequested(const QPoint pos);
-    void        slotTagged(void);
-    void        slotDisplayChanged(int index);
-    void        slotOrientationChanged(int index);
+    void        slotManageTags(void);
     void        slotOpenFolder();                   ///< Called if user wants to open desktop image folder
-    void        slotCellDoubleClicked(int row, int col);
-	void		slotSSLMissing(void);				///< called from DownloadManager if SSL is not supported
+    void        slotOrientationChanged(int index);
+    void        slotShowImage(ImageItem img);     ///< Display a given ImageItem as background image
+    void		slotSSLMissing(void);				///< called from DownloadManager if SSL is not supported
+    void        slotTagged(void);
 signals:
     void    signalDoAddImage(ImageItem item, bool newPic = false);
     void    signalDoAddNextImage(void);
@@ -77,6 +78,8 @@ private:
     void        saveSettings(void);
     void        setupConnections();             ///< all needed connects here
     void        setWindowSize(const QImage &img);
+    void        showBackgroundImage(QString fname);
+
     QList<ImageItem> getItemList(QByteArray data);
     QList<ImageItem> getImageItem(QJsonObject image);
     void             createCacheDirs(void);

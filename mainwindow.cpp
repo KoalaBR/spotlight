@@ -85,6 +85,7 @@ void MainWindow::registerMetatypes()
 
 void MainWindow::setupConnections()
 {
+    // Communication with AddImageThread
     connect(this, SIGNAL(signalDoAddImage(ImageItem,bool)), m_addThread, SLOT(doAddImage(ImageItem,bool)));
     connect(this, SIGNAL(signalDoAddNextImage()),           m_addThread, SLOT(doAddNextImage()));
     connect(this, SIGNAL(signalDoClear()),                  m_addThread, SLOT(doClear()));
@@ -109,8 +110,8 @@ void MainWindow::setupConnections()
     connect(m_addThread,    SIGNAL(signalAllImagesAdded()),     this, SLOT(slotAllImagesAdded()));
     connect(m_addThread,    SIGNAL(signalAddImage(QTableWidgetItem*, int,int, int)),
                 this, SLOT(slotAddImage(QTableWidgetItem*, int,int,int)));
-    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(const QPoint)),
-                this, SLOT(slotContextMenuRequested(const QPoint)));
+    connect(ui->tbwOverview, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(slotContextMenuRequested(QPoint)));
     connect(ui->cmbOrientation, SIGNAL(currentIndexChanged(int)), this, SLOT(slotOrientationChanged(int)));
 }
 
@@ -125,6 +126,21 @@ void MainWindow::setWindowSize(const QImage &img)
         height = size.height();
     }
     this->setFixedSize(width, height);
+
+}
+
+void MainWindow::showBackgroundImage(QString fname)
+{
+    m_changeImgTimeout.stop();
+    m_title = "";
+    if (m_imgNew.load(fname))
+    {
+        setWindowSize(m_imgNew);
+        this->setFixedSize(m_imgNew.width(), m_imgNew.height());
+        this->centralWidget()->repaint();
+        clickedHideGUI();
+    }
+    m_changeImgTimeout.start(C_MW_TimeOut);
 
 }
 
@@ -217,7 +233,9 @@ void MainWindow::slotFadeTimeout()
 void MainWindow::slotFindImage()
 {
     FindDialog find(&m_database, this);
+    connect(&find, SIGNAL(signalShowImage(ImageItem)), this, SLOT(slotShowImage(ImageItem)));
     find.exec();
+    disconnect(&find, SIGNAL(signalShowImage(ImageItem)), this, SLOT(slotShowImage(ImageItem)));
 }
 
 
@@ -231,7 +249,6 @@ void MainWindow::slotDownloadComplete(QString content)
 {
     printLine(tr("Daten geladen - Ermittle URLs"));
     QList<ImageItem> itemList = getItemList(content.toUtf8());
-    qDebug() << "Anzahl:" << itemList.size();
     for (int i = 0; i < itemList.size(); i++)
     {
         int orientation = ui->cmbOrientation->currentIndex();
@@ -363,7 +380,7 @@ QString MainWindow::createStoredImageFilename(ImageItem &img)
     return fname;
 }
 
-void MainWindow::slotContextMenuRequested(const QPoint pos)
+void MainWindow::slotContextMenuRequested(QPoint pos)
 {
     QTableWidgetItem *item = ui->tbwOverview->currentItem();
     if (item == nullptr)
@@ -384,18 +401,8 @@ void MainWindow::slotContextMenuRequested(const QPoint pos)
     else
     if (action->text() == tr("Show"))
     {
-        m_changeImgTimeout.stop();
-        m_title = "";
-        if (m_imgNew.load(fname))
-        {
-            m_title = img.title();
-            setWindowSize(m_imgNew);
-            this->setFixedSize(m_imgNew.width(), m_imgNew.height());
-            this->centralWidget()->repaint();
-            clickedHideGUI();
-        }
-        m_changeImgTimeout.start(C_MW_TimeOut);
-
+        showBackgroundImage(fname);
+        m_title = img.title();
     }
     else
     if (action->text() == tr("Delete"))
@@ -452,6 +459,11 @@ Filter MainWindow::getCurrentFilter(void)
     return fi;
 }
 
+void MainWindow::slotOpenFolder()
+{
+    AbstractDesktopSupport::openFolder(m_baseDir + "download");
+}
+
 void MainWindow::slotOrientationChanged(int index)
 {
     Q_UNUSED(index);
@@ -462,9 +474,22 @@ void MainWindow::slotOrientationChanged(int index)
     slotChangeBackgroundTimeout();      // Change background
 }
 
-void MainWindow::slotOpenFolder()
+void MainWindow::slotShowImage(ImageItem img)
 {
-    AbstractDesktopSupport::openFolder(m_baseDir + "download");
+    QString fname = createStoredImageFilename(img);
+    showBackgroundImage(fname);
+    m_title = img.title();
+    clickedHideGUI();
+}
+
+void MainWindow::slotSSLMissing()
+{
+    QString msg = tr("Ohne SSL Funktionalität lassen sich keine Bilder laden.");
+    msg += "\n" + tr("Bitte stellen Sie sicher, dass sich diese DLLs im ");
+    msg += tr("Programmverzeichnis befinden:") + "\n";
+    msg += " * libeay32.dll\n";
+    msg += " * ssleay32.dll\n";
+    QMessageBox::critical(this, tr("SSL Unterstützung fehlt"), msg, QMessageBox::Ok);
 }
 
 void MainWindow::slotCellDoubleClicked(int row, int col)
@@ -487,15 +512,6 @@ void MainWindow::slotCellDoubleClicked(int row, int col)
         m_addThread->doShowTopLevel();
 }
 
-void MainWindow::slotSSLMissing(void)
-{
-	QString msg = tr("Ohne SSL Funktionalität lassen sich keine Bilder laden.");
-	msg += "\n" + tr("Bitte stellen Sie sicher, dass sich diese DLLs im ");
-	msg += tr("Programmverzeichnis befinden:") + "\n";
-	msg += " * libeay32.dll\n";
-	msg += " * ssleay32.dll\n";
-	QMessageBox::critical(this, tr("SSL Unterstützung fehlt"), msg, QMessageBox::Ok);
-}
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
