@@ -3,6 +3,7 @@
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
+#include <QMutex>
 
 #include "imageitem.h"
 
@@ -36,8 +37,12 @@ public:
     void                deleteTag(const int id);                            ///< remove tag with given id from database
     QList<Tag>          getTagsForImage(const ImageItem item);              ///< Which tags are assigned to a given image?
     bool                setNewTitle(const ImageItem item, QString title);   ///< update the title (e.g. for image which have no title). Returns true if update was successful
+    void                setUpdateTime();                                 ///< set Update time (last time we downloaded and installed a new version)
+    QDateTime           getLastUpdateTime();
 private:
-
+    void    lock(QString msg);
+    void    unlock(QString msg);
+    QMutex          m_mutex;
     QSqlDatabase    m_db;
     Filter          m_filter;           ///< Which type of images will be displayed?
 };

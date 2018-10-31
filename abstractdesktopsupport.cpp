@@ -4,8 +4,9 @@
 #include <QList>
 #include <QUrl>
 #include <QString>
-#include <QDesktopWidget>
 #include <QDesktopServices>
+#include <QGuiApplication>
+#include <QScreen>
 
 AbstractDesktopSupport::AbstractDesktopSupport()
 {
@@ -41,8 +42,7 @@ bool AbstractDesktopSupport::isDesktop(DesktopEnvironment desk)
 
 QRect AbstractDesktopSupport::getDesktopSize(void)
 {
-    QDesktopWidget widget;
-    return widget.availableGeometry(widget.primaryScreen()); // or screenGeometry(), depending on your needs
+    return QGuiApplication::primaryScreen()->availableGeometry();
 }
 
 void AbstractDesktopSupport::openFolder(QString path)

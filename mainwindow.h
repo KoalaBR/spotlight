@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QList>
 #include <QTimer>
+#include <QSettings>
 
 #include "filedownloader.h"
 #include "imageitem.h"
@@ -104,6 +105,8 @@ private:
     QMenu               *m_tags;
     AbstractDesktopSupport  *m_desktop;
     QString              m_baseDir;                     ///< Where do we store the pictures?
+    QSettings           *m_settings;
+
 };
 
 

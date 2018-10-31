@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QDir>
+#include <QDateTime>
 
 Database::Database()
 {
@@ -23,6 +24,7 @@ void Database::setFilter(Filter fi)
 
 void Database::addTag(const int id, const QString name)
 {
+    lock("addTag");
     QSqlQuery query(m_db);
     if (id < 0)
     {
@@ -45,12 +47,14 @@ void Database::addTag(const int id, const QString name)
             qDebug() << "Update tags failed";
         }
     }
+    unlock("addTag");
 }
 
 void Database::deleteTag(const int id)
 {
     QString sql = "delete from tags where id=%1";
     sql = sql.arg(id);
+    lock("deleteTag");
     QSqlQuery query(m_db);
     if (!query.exec(sql))
     {
@@ -62,6 +66,7 @@ void Database::deleteTag(const int id)
     {
         qDebug() << "Error: Delete from tagimg failed";
     }
+    unlock("deleteTag");
 }
 
 QList<Tag> Database::getTagsForImage(const ImageItem item)
@@ -69,6 +74,7 @@ QList<Tag> Database::getTagsForImage(const ImageItem item)
     QList<Tag>  result;
     QString sql = "select id, name from tags where id in (select tagid from tagimg where picid=%1)";
     sql = sql.arg(item.id());
+    lock("getTagsForImage");
     QSqlQuery query(m_db);
     if (query.exec(sql))
     {
@@ -83,26 +89,33 @@ QList<Tag> Database::getTagsForImage(const ImageItem item)
         }
     }
     else qDebug() << "Error:" << query.lastError().text();
+    unlock("getTagsForImage");
     return result;
 }
 
 bool Database::setNewTitle(const ImageItem item, QString title)
 {
+    lock("setNewTitle");
     QSqlQuery query(m_db);
     QString sql = "Update picdata set title=:1 where id=:2";
     query.prepare(sql);
     query.bindValue(":1", title);
     query.bindValue(":2", item.id());
-    return query.exec();
+    bool result = query.exec();
+    unlock("setNewTitle");
+    return result;
 }
 
 bool Database::openDatabase(QString baseDir)
 {
+    qDebug() << QSqlDatabase::drivers();
+    lock("openDatabase");
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(baseDir +"download" + QDir::separator() + "spotlight.db");
     if (!m_db.open())
     {
         qDebug() << "Fehler 1" << m_db.lastError().text();
+        unlock("openDatabase");
         return false;
     }
     else
@@ -115,8 +128,10 @@ bool Database::openDatabase(QString baseDir)
         if (!query.exec(sql))
         {
             qDebug() << "Fehler 2 "<<m_db.lastError().text();
+            unlock("openDatabase");
             return false;
         }
+        sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata where portrait=0 and deleted=0";
 //        sql = "Create table if not exists tagimg(tagid INTEGER, imageid INTEGER)";
         sql = "create table if not exists tagimg(tagid integer not null, picid integer not null, primary key(tagid, picid))";
         if (!query.exec(sql))
@@ -127,8 +142,31 @@ bool Database::openDatabase(QString baseDir)
                 "name varchar(50))";
         if (!query.exec(sql))
         {
-            qDebug() << "Error: creating tag table failed " << m_db.lastError().text();
+             qDebug() << "Error: creating tag table failed " << query.lastError().text();
+             unlock("openDatabase");
+             return false;
+        }
+        sql = "Create Table if not Exists lastupdate(time varchar(30))";
+        if (!query.exec(sql))
+        {
+            qDebug() << "Error: Can't create table lastupdate " << query.lastError().text();
+            unlock("openDatabase");
             return false;
+        }
+        sql = "Select count(*) from lastupdate";
+        if (query.exec(sql))
+        {
+            query.next();
+            if (query.value(0).toInt() == 0)
+            {
+                sql = "Insert into lastupdate(time) values(datetime('now'))";
+                if (!query.exec(sql))
+                {
+                    qDebug() << "Error: Insert date failed" << query.lastError().text();
+                    unlock("openDatabase");
+                    return false;
+                }
+            }
         }
         QStringList  tags;
         sql = "Select count(*) as anz from tags";
@@ -136,7 +174,10 @@ bool Database::openDatabase(QString baseDir)
         if (query.next())
         {
             if (query.value(0).toInt() > 0)
+            {
+                unlock("openDatabase");
                 return true;
+            }
         }
         tags << "Neu"      << "Gelöscht" << "Landschaften"
              << "Tiere"    << "Bauwerke" << "Himmel" ;
@@ -145,9 +186,54 @@ bool Database::openDatabase(QString baseDir)
             sql = "insert into tags(name) values('"+ tags[i]+"')";
             query.exec(sql);
         }
-
+        unlock("openDatabase");
         return true;
     }
+}
+
+void Database::setUpdateTime()
+{
+    lock("setUpdateTime");
+    QSqlQuery query(m_db);
+    if (!query.exec("update lastupdate set time=datetime('now')"))
+    {
+        qDebug() << "Fehler UpdateTime "<<m_db.lastError().text();
+    }
+    query.clear();
+    unlock("setUpdateTime");
+}
+
+QDateTime Database::getLastUpdateTime()
+{
+    lock("getLastUpdateTime");
+    QSqlQuery query(m_db);
+    if (!query.exec("select time from lastupdate"))
+    {
+        qDebug() << "Fehler getUpdateTime"<<m_db.lastError().text();
+        unlock("getLastUpdateTime");
+        return QDateTime();
+    }
+    if (!query.next())
+    {
+        unlock("getLastUpdateTime");
+        return QDateTime();
+    }
+    QDateTime result = query.value("time").toDateTime();
+    query.clear();
+    unlock("getLastUpdateTime");
+    return result;
+}
+
+void Database::lock(QString msg)
+{
+    qDebug() << "Locking" << msg;
+    m_mutex.lock();
+}
+
+void Database::unlock(QString msg)
+{
+    qDebug() << "unlock" << msg;
+    m_mutex.unlock();
 }
 
 ImageItem Database::getRandomImage(void)
@@ -167,13 +253,17 @@ ImageItem Database::getRandomImage(void)
  */
 bool Database::canDownloadImage(ImageItem item)
 {
+    lock("canDownloadImage");
     QSqlQuery query(m_db);
     QString sql = "Select count(deleted) from picdata where source=:1 and url=:2";
     query.prepare(sql);
     query.bindValue(":1", static_cast<int>(item.source()));
     query.bindValue(":2", item.url());
     if (!query.exec())
+    {
+        unlock("canDownloadImage");
         return true;
+    }
     else
     {
         bool    ok;
@@ -182,10 +272,17 @@ bool Database::canDownloadImage(ImageItem item)
         // So no download necessary
 
         if (!query.next())
+        {
+            unlock("canDownloadImage");
             return true;
+        }
         int count = query.value(0).toInt(&ok);
         if (!ok)
+        {
+            unlock("canDownloadImage");
             return true;
+        }
+        unlock("canDownloadImage");
         if (count == 0)
             return true;
         else return false;
@@ -194,6 +291,7 @@ bool Database::canDownloadImage(ImageItem item)
 
 void Database::addImage(ImageItem &item)
 {
+    lock("addImage");
     QSqlQuery query(m_db);
     QImage img = item.image();
     if (item.isPortrait())
@@ -228,10 +326,12 @@ void Database::addImage(ImageItem &item)
     query.exec(sql);
     if (query.next())
         item.setId(query.value(1).toInt());
+    unlock("addImage");
 }
 
 QList<ImageItem> Database::getImages(const Filter f)
 {
+    lock("getImages");
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
     if (f == Filter::FI_LANDSCAPE)
@@ -241,6 +341,7 @@ QList<ImageItem> Database::getImages(const Filter f)
         sql += "where portrait=1 and deleted=0";
     else sql += "where deleted=0";
     QList<ImageItem> list;
+    qDebug() << sql;
     if (query.exec(sql))
     {
         while (query.next())
@@ -272,6 +373,7 @@ QList<ImageItem> Database::getImages(const Filter f)
                 list.append(item);
         }
     }
+    unlock("getImages");
     return list;
 }
 
@@ -285,6 +387,7 @@ QList<ImageItem> Database::getImages(const Filter f)
 QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
 {
     // select * from picdata where id in (select picid from tagimg where tagid=3)
+    lock("getImagesByTag");
     QSqlQuery query(m_db);
     QString sql = "select url, md5, deleted, source, title, days, thumb, desc, portrait,id from picdata ";
     if (tagid > 2)
@@ -325,12 +428,14 @@ QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
         }
     }
     else qDebug() << query.lastError().text();
+    unlock("getImagesByTag");
     return list;
 
 }
 
 void Database::deleteImage(ImageItem item)
 {
+    lock("deleteImage");
     QSqlQuery query(m_db);
     QString sql = "Update picdata set deleted=1 where ";
     if (item.source() == Source::SRC_BING)
@@ -348,10 +453,12 @@ void Database::deleteImage(ImageItem item)
         query.bindValue(":3", static_cast<int>(item.source()));
     }
     query.exec();
+    unlock("deleteImage");
 }
 
 void Database::tagImage(bool checked, int tagid, int imgid)
 {
+    lock("tagImage");
     QSqlQuery query(m_db);
     QString sql = "";
     if (checked)
@@ -361,10 +468,12 @@ void Database::tagImage(bool checked, int tagid, int imgid)
     query.bindValue(":1", tagid);
     query.bindValue(":2", imgid);
     query.exec();
+    unlock("tagImage");
 }
 
 QList<Tag> Database::getTags(void)
 {
+    lock("getTags");
     QList<Tag> list;
     QString sql = "select id, name from tags";
     QSqlQuery query(m_db);
@@ -380,12 +489,14 @@ QList<Tag> Database::getTags(void)
             list.append(tag);
         }
     }
+    unlock("getTags");
     return list;
 }
 
 bool Database::isTagUsed(const int tagid, const int imgid)
 {
     QString sql = "Select count(*) from tagimg where tagid=:1 and picid=:2";
+    lock("isTagUsed");
     QSqlQuery query(m_db);
     query.prepare(sql);
     query.bindValue(":1", tagid);
@@ -393,10 +504,13 @@ bool Database::isTagUsed(const int tagid, const int imgid)
     query.exec();
     if (query.next())
     {
+        bool result = false;
         if (query.value(0).toInt() > 0)
-            return true;
-        else return false;
+            result = true;
+        unlock("isTagUsed");
+        return result;
     }
     else qDebug() << query.lastError().text();
+    unlock("isTagUsed");
     return false;
 }

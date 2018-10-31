@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     registerMetatypes();
     ui->setupUi(this);
     createCacheDirs();
+    m_settings = new QSettings(m_baseDir +  "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
     if (!m_database.openDatabase(m_baseDir))
         printLine(tr("Error: Could not open database"));
     m_addThread = new AddImageThread(&m_database, ui->tbwOverview);
@@ -72,6 +73,7 @@ MainWindow::~MainWindow()
     delete m_provSpot;
     delete m_provBing;
     delete m_provCast;
+    delete m_settings;
     if (m_addThread != nullptr)
         m_addThread->doShutdown();
 }
@@ -285,24 +287,23 @@ void MainWindow::printLine(QString line)
 
 void MainWindow::saveSettings(void)
 {
-    QSettings   settings(m_baseDir +  "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
-    settings.setValue("orientation", ui->cmbOrientation->currentIndex());
-    settings.setValue("title",  ui->cmbTitle->currentIndex());
-    settings.setValue("geometry", this->geometry());
-    settings.setValue("display", ui->cmbDisplay->currentIndex());
+    m_settings->setValue("orientation", ui->cmbOrientation->currentIndex());
+    m_settings->setValue("title",  ui->cmbTitle->currentIndex());
+    m_settings->setValue("geometry", this->geometry());
+    m_settings->setValue("display", ui->cmbDisplay->currentIndex());
 }
 
 void MainWindow::loadSettings(void)
 {
-    QSettings   settings(m_baseDir + "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
-    ui->cmbOrientation->setCurrentIndex(settings.value("orientation", 0).toInt());
-    ui->cmbTitle->setCurrentIndex(settings.value("title", 0).toInt());
-    QRect rect = settings.value("geometry").toRect();
+//    QSettings   settings(m_baseDir + "download" + QDir::separator() + C_MW_IniFile, QSettings::IniFormat);
+    ui->cmbOrientation->setCurrentIndex(m_settings->value("orientation", 0).toInt());
+    ui->cmbTitle->setCurrentIndex(m_settings->value("title", 0).toInt());
+    QRect rect = m_settings->value("geometry").toRect();
     if (rect.isValid())
         this->setGeometry(rect);
-    ui->cmbDisplay->setCurrentIndex(settings.value("display", 0).toInt());
-    slotOrientationChanged(settings.value("orientation", 0).toInt());
-}
+    ui->cmbDisplay->setCurrentIndex(m_settings->value("display", 0).toInt());
+    slotOrientationChanged(m_settings->value("orientation", 0).toInt());
+ }
 
 QList<ImageItem> MainWindow::getItemList(QByteArray data)
 {

@@ -10,7 +10,7 @@
 #include "dialogrename.h"
 #include "ui_dialogrename.h"
 
-DialogRename *dlgRename = NULL;      ///< For Callback storeHTML()
+DialogRename *dlgRename = nullptr;      ///< For Callback storeHTML()
 
 DialogRename::DialogRename(const ImageItem item, Database *db, QString baseDir, QWidget *parent) :
     QDialog(parent),
@@ -132,6 +132,8 @@ void DialogRename::slotReverseSearchFinished(bool ok)
 
     }
     else ui->stwReverseSearch->setCurrentIndex(0);
+#else
+    Q_UNUSED(ok);
 #endif
 }
 
