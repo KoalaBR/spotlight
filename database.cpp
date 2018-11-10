@@ -411,7 +411,7 @@ QList<ImageItem> Database::getImagesByTag(const Filter f, int tagid)
              QByteArray byteArray = query.value(6).toByteArray();
              QImage  img = QImage::fromData(byteArray);
              QString url = query.value(0).toString();
-             QString md5 = query.value(1).toString();
+//             QString md5 = query.value(1).toString();
              int     del = query.value(2).toInt();
              Source src  = static_cast<Source>(query.value(3).toInt());
              QString title = query.value(4).toString();
